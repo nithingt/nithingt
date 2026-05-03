@@ -3,433 +3,670 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Routely – Home</title>
+  <title>MovePlan — Moving Inventory</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;900&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap" rel="stylesheet" />
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      --grey-200: #f4f4f4;
-      --grey-600: #636363;
-      --grey-900: #212121;
-      --blue-200: #d8e0f7;
       --blue-500: #0032d2;
+      --blue-200: #d8e0f7;
+      --blue-50:  #f0f3fd;
+      --grey-900: #1a1a1a;
+      --grey-700: #444;
+      --grey-500: #777;
+      --grey-200: #e8e8e8;
+      --grey-100: #f4f4f4;
       --green-500: #00854a;
+      --red-500:   #d63031;
+      --red-100:   #ffe6e6;
       --font: 'Inter', sans-serif;
+      --shadow: 0 2px 12px rgba(0,0,0,0.08);
+      --r: 12px;
+      --r-sm: 8px;
     }
 
     body {
       font-family: var(--font);
-      background: #e8e8e8;
+      background: #dde0e8;
       display: flex;
       justify-content: center;
       min-height: 100vh;
     }
 
-    .screen {
+    .app {
       width: 430px;
       min-height: 100vh;
       background: #fff;
       display: flex;
       flex-direction: column;
-    }
-
-    /* ── Hero ─────────────────────────────────────────── */
-    .hero {
       position: relative;
-      height: 500px;
-      flex-shrink: 0;
-      overflow: hidden;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      padding: 64px 12px 24px;
-      /* Mountain landscape placeholder: sky blue → green hills */
-      background: linear-gradient(
-        180deg,
-        #6ab4d8 0%,
-        #87ceeb 30%,
-        #5a9e6f 60%,
-        #3d7a50 80%,
-        #2d5a3a 100%
-      );
     }
 
-    .hero::after {
-      content: '';
-      position: absolute;
-      inset: 0;
-      background: linear-gradient(to bottom, rgba(0,0,0,0) 56%, rgba(0,0,0,0.8) 100%);
-      pointer-events: none;
-    }
+    .screen { display: none; flex-direction: column; min-height: 100vh; }
+    .screen.active { display: flex; }
 
-    /* Mountain silhouette suggestion */
-    .hero::before {
-      content: '';
-      position: absolute;
-      bottom: 140px;
-      left: 0;
-      right: 0;
-      height: 180px;
-      background: linear-gradient(135deg, #4a8a5e 40%, #5fa872 60%, #3d7050 100%);
-      clip-path: polygon(0 100%, 15% 40%, 28% 65%, 42% 20%, 55% 50%, 68% 30%, 80% 55%, 92% 35%, 100% 60%, 100% 100%);
-      z-index: 0;
-    }
-
-    .hero__title {
-      position: relative;
-      z-index: 2;
-      font-size: 24px;
-      font-weight: 600;
-      line-height: 32px;
-      color: var(--grey-900);
-    }
-
-    .hero__bottom {
-      position: relative;
-      z-index: 2;
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-    }
-
-    .hero__headline {
-      font-size: 32px;
-      font-weight: 900;
-      line-height: 40px;
-      letter-spacing: -1px;
-      color: #fff;
-      text-transform: capitalize;
-    }
-
-    .hero__subtitle {
-      font-size: 14px;
-      font-weight: 400;
-      line-height: 20px;
-      color: #fff;
-      width: 215px;
-    }
-
-    .hero__actions {
-      display: flex;
-      gap: 12px;
-      align-items: center;
-      flex-wrap: wrap;
-    }
-
-    /* ── Buttons ──────────────────────────────────────── */
+    /* ── Buttons ── */
     .btn {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      padding: 8px 16px;
-      border-radius: 999px;
-      font-size: 14px;
-      font-weight: 600;
-      line-height: 18px;
-      letter-spacing: -0.28px;
-      cursor: pointer;
-      border: none;
-      font-family: var(--font);
-      white-space: nowrap;
+      display: inline-flex; align-items: center; justify-content: center;
+      gap: 8px; padding: 13px 20px; border-radius: 999px;
+      font-size: 14px; font-weight: 600; cursor: pointer; border: none;
+      font-family: var(--font); transition: opacity .15s, transform .1s;
+      line-height: 1;
     }
-
+    .btn:active { transform: scale(0.97); }
+    .btn:disabled { opacity: .45; cursor: default; }
     .btn--primary { background: var(--blue-500); color: #fff; }
-    .btn--outline  { background: transparent; border: 2px solid var(--grey-200); color: #fff; }
-    .btn--light    { background: #f2f5fb; color: var(--grey-900); line-height: 22px; }
-
-    .btn svg { width: 18px; height: 18px; flex-shrink: 0; }
+    .btn--ghost   { background: var(--grey-100); color: var(--grey-900); }
+    .btn--dark    { background: var(--grey-900); color: #fff; }
+    .btn--full    { width: 100%; }
+    .btn svg      { width: 18px; height: 18px; flex-shrink: 0; }
 
     .icon-btn {
-      width: 38px;
-      height: 38px;
-      border-radius: 999px;
-      background: #f2f5fb;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      border: none;
-      flex-shrink: 0;
+      width: 34px; height: 34px; border-radius: 50%;
+      background: var(--grey-100); border: none; cursor: pointer;
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    }
+    .icon-btn svg { width: 17px; height: 17px; }
+    .icon-btn:active { transform: scale(.93); }
+    .icon-btn--del { background: var(--red-100); }
+    .icon-btn--del svg { fill: var(--red-500); }
+    .icon-btn--edit svg { fill: #555; }
+
+    /* ── Forms ── */
+    .form-group  { display: flex; flex-direction: column; gap: 6px; }
+    .form-label  { font-size: 11px; font-weight: 700; color: var(--grey-500); text-transform: uppercase; letter-spacing: .6px; }
+    .form-input  {
+      padding: 12px 14px; border: 1.5px solid var(--grey-200);
+      border-radius: var(--r-sm); font-size: 15px; font-family: var(--font);
+      color: var(--grey-900); background: #fff; outline: none;
+      transition: border-color .15s;
+    }
+    .form-input:focus { border-color: var(--blue-500); }
+    .form-input::placeholder { color: #bbb; }
+    textarea.form-input { resize: vertical; min-height: 68px; }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+    .type-toggle { display: grid; grid-template-columns: 1fr 1fr; border: 1.5px solid var(--grey-200); border-radius: var(--r-sm); overflow: hidden; }
+    .type-btn {
+      padding: 10px; text-align: center; font-size: 13px; font-weight: 600;
+      cursor: pointer; border: none; background: #fff; color: var(--grey-500);
+      font-family: var(--font); transition: background .15s, color .15s;
+    }
+    .type-btn.active { background: var(--blue-500); color: #fff; }
+
+    /* ══ SETUP SCREEN ══════════════════════════════ */
+    #screen-setup {
+      background: linear-gradient(155deg, #0032d2 0%, #1847e8 55%, #2a5ef5 100%);
     }
 
-    .icon-btn svg { width: 22px; height: 22px; }
-
-    /* ── Content ──────────────────────────────────────── */
-    .content {
-      display: flex;
-      flex-direction: column;
-      gap: 24px;
-      padding: 24px 12px;
+    .setup-header {
+      padding: 64px 24px 28px;
+      display: flex; flex-direction: column; gap: 14px;
     }
 
-    .section-heading {
-      font-size: 18px;
-      font-weight: 600;
-      line-height: 24px;
-      color: var(--grey-900);
+    .logo { display: flex; align-items: center; gap: 10px; }
+    .logo-icon {
+      width: 42px; height: 42px; background: rgba(255,255,255,.18);
+      border-radius: 11px; display: flex; align-items: center; justify-content: center;
+    }
+    .logo-icon svg { width: 24px; height: 24px; fill: #fff; }
+    .logo-name { font-size: 18px; font-weight: 700; color: #fff; }
+
+    .setup-title    { font-size: 34px; font-weight: 900; color: #fff; line-height: 1.15; letter-spacing: -1px; }
+    .setup-subtitle { font-size: 14px; color: rgba(255,255,255,.72); line-height: 1.5; }
+
+    .setup-card {
+      background: #fff; border-radius: 24px 24px 0 0;
+      flex: 1; padding: 28px 20px 40px;
+      display: flex; flex-direction: column; gap: 18px;
+    }
+    .setup-card-title { font-size: 17px; font-weight: 700; color: var(--grey-900); }
+    .setup-hint { font-size: 12px; color: var(--grey-500); text-align: center; }
+
+    /* ══ INVENTORY SCREEN ═══════════════════════════ */
+    .inv-topbar {
+      background: var(--blue-500);
+      padding: 52px 18px 18px;
+      display: flex; flex-direction: column; gap: 14px;
     }
 
-    /* ── Trip card ────────────────────────────────────── */
-    .trip-card {
-      background: var(--green-500);
-      border-radius: 12px;
-      overflow: hidden;
+    .inv-bar-row {
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .inv-appname { font-size: 13px; font-weight: 600; color: rgba(255,255,255,.65); }
+    .inv-edit-btn {
+      background: rgba(255,255,255,.15); border: none; border-radius: 999px;
+      color: #fff; font-size: 12px; font-weight: 600; padding: 5px 13px;
+      cursor: pointer; font-family: var(--font);
     }
 
-    .trip-card__photo {
-      width: 100%;
-      height: 391px;
-      /* Forest/hiker placeholder: rich greens */
-      background: linear-gradient(
-        160deg,
-        #1a3d20 0%,
-        #2d6635 30%,
-        #3a7d42 50%,
-        #2a5c30 75%,
-        #1a3d20 100%
-      );
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-shrink: 0;
+    .route-card {
+      background: rgba(255,255,255,.13); border-radius: var(--r);
+      padding: 12px 14px; display: flex; flex-direction: column; gap: 8px;
     }
+    .route-row   { display: flex; align-items: center; gap: 10px; }
+    .route-dot   { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+    .route-dot--from { background: #7dd3fc; }
+    .route-dot--to   { background: #fbbf24; }
+    .route-lbl   { font-size: 10px; font-weight: 700; color: rgba(255,255,255,.55); text-transform: uppercase; letter-spacing: .5px; width: 26px; flex-shrink: 0; }
+    .route-addr  { font-size: 13px; font-weight: 500; color: #fff; }
+    .route-div   { height: 1px; background: rgba(255,255,255,.18); }
 
-    /* Stylised tree silhouettes */
-    .trip-card__photo svg {
-      width: 100%;
-      height: 100%;
-      opacity: 0.35;
+    .stats-row { display: flex; gap: 8px; }
+    .stat-chip { background: rgba(255,255,255,.18); border-radius: 999px; padding: 4px 12px; font-size: 12px; font-weight: 600; color: #fff; }
+
+    /* body */
+    .inv-body { flex: 1; background: var(--grey-100); display: flex; flex-direction: column; }
+
+    .empty-state {
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      flex: 1; padding: 48px 24px; gap: 12px; text-align: center;
     }
+    .empty-icon { width: 64px; height: 64px; background: var(--grey-200); border-radius: 50%; display: flex; align-items: center; justify-content: center; }
+    .empty-icon svg { width: 30px; height: 30px; fill: var(--grey-500); }
+    .empty-title { font-size: 16px; font-weight: 600; color: var(--grey-900); }
+    .empty-sub   { font-size: 13px; color: var(--grey-500); }
 
-    .trip-card__body {
-      display: flex;
-      flex-direction: column;
-      gap: 24px;
-      padding: 24px 12px;
+    .item-list { display: flex; flex-direction: column; gap: 10px; padding: 14px 14px 20px; }
+
+    .item-card {
+      background: #fff; border-radius: var(--r); padding: 14px;
+      display: flex; flex-direction: column; gap: 9px; box-shadow: var(--shadow);
     }
-
-    .trip-card__text {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
+    .item-card__head { display: flex; align-items: flex-start; gap: 8px; }
+    .item-badge {
+      padding: 3px 8px; border-radius: 999px;
+      font-size: 10px; font-weight: 700; letter-spacing: .4px; flex-shrink: 0; margin-top: 1px;
     }
+    .item-badge--ikea   { background: var(--blue-50); color: var(--blue-500); }
+    .item-badge--custom { background: var(--grey-100); color: var(--grey-700); }
+    .item-name  { font-size: 15px; font-weight: 600; color: var(--grey-900); flex: 1; }
+    .item-acts  { display: flex; gap: 4px; margin-left: auto; }
+    .item-meta  { display: flex; gap: 14px; flex-wrap: wrap; }
+    .meta-item  { display: flex; flex-direction: column; gap: 1px; }
+    .meta-lbl   { font-size: 10px; font-weight: 600; color: var(--grey-500); text-transform: uppercase; letter-spacing: .4px; }
+    .meta-val   { font-size: 13px; font-weight: 500; color: var(--grey-900); }
+    .item-notes { font-size: 13px; color: var(--grey-500); font-style: italic; border-top: 1px solid var(--grey-200); padding-top: 8px; }
 
-    .avatar-group {
-      display: flex;
-      align-items: center;
+    .inv-footer {
+      padding: 14px; background: #fff;
+      border-top: 1px solid var(--grey-200);
+      display: flex; flex-direction: column; gap: 8px;
     }
+    .pdf-hint { font-size: 12px; color: var(--grey-500); text-align: center; padding: 2px 0; }
 
-    .avatar {
-      width: 24px;
-      height: 24px;
-      border-radius: 50%;
-      border: 1.5px solid rgba(255,255,255,0.6);
-      margin-right: -6px;
-      flex-shrink: 0;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+    /* ══ MODAL ═══════════════════════════════════════ */
+    .overlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,.5);
+      z-index: 100; display: none; align-items: flex-end; justify-content: center;
     }
+    .overlay.open { display: flex; }
 
-    .avatar:nth-child(1) { background: #e8a87c; }
-    .avatar:nth-child(2) { background: #7ca8e8; }
-
-    .avatar svg { width: 14px; height: 14px; }
-
-    .trip-card__caption {
-      font-size: 12px;
-      font-weight: 600;
-      line-height: 16px;
-      letter-spacing: 0.5px;
-      color: #fff;
-      margin-top: 2px;
+    .modal {
+      background: #fff; border-radius: 24px 24px 0 0;
+      width: 430px; max-height: 92vh; overflow-y: auto;
+      padding: 22px 20px 40px;
+      display: flex; flex-direction: column; gap: 18px;
+      animation: up .22s ease-out;
     }
+    @keyframes up { from { transform: translateY(100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
 
-    .trip-card__heading {
-      font-size: 24px;
-      font-weight: 600;
-      line-height: 32px;
-      color: #f4f4f4;
+    .modal-hd   { display: flex; align-items: center; justify-content: space-between; }
+    .modal-title{ font-size: 18px; font-weight: 700; color: var(--grey-900); }
+    .modal-cls  {
+      width: 30px; height: 30px; border-radius: 50%; background: var(--grey-100);
+      border: none; cursor: pointer; font-size: 17px; color: var(--grey-700);
+      display: flex; align-items: center; justify-content: center;
     }
+    .modal-body { display: flex; flex-direction: column; gap: 14px; }
 
-    .trip-card__actions {
-      display: flex;
-      gap: 8px;
-      align-items: center;
+    .ikea-hint {
+      background: var(--blue-50); border-radius: var(--r-sm); padding: 10px 12px;
+      font-size: 13px; color: var(--blue-500); display: none; line-height: 1.5;
     }
+    .ikea-hint.show { display: block; }
+    .ikea-hint a { color: var(--blue-500); font-weight: 600; }
 
-    /* ── Bottom Nav ───────────────────────────────────── */
-    .nav-bar {
-      position: sticky;
-      bottom: 0;
-      background: #fff;
-      display: flex;
-      align-items: center;
-      padding: 12px 12px 24px;
-      margin-top: auto;
-      box-shadow: 0 -1px 0 rgba(0,0,0,0.06);
+    /* ══ TOAST ═══════════════════════════════════════ */
+    .toast {
+      position: fixed; bottom: 24px; left: 50%;
+      transform: translateX(-50%) translateY(72px);
+      background: var(--grey-900); color: #fff;
+      padding: 9px 20px; border-radius: 999px;
+      font-size: 13px; font-weight: 500; z-index: 200;
+      transition: transform .28s ease; white-space: nowrap;
     }
-
-    .nav-item {
-      flex: 1;
-      display: flex;
-      justify-content: center;
-    }
-
-    .nav-pill {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding: 4px 24px;
-      border-radius: 24px;
-      gap: 2px;
-    }
-
-    .nav-pill--active { background: var(--blue-200); }
-
-    .nav-pill svg { width: 24px; height: 24px; }
-
-    .nav-label {
-      font-size: 10px;
-      font-weight: 500;
-      line-height: 12px;
-      white-space: nowrap;
-    }
-
-    .nav-label--active   { color: var(--blue-500); }
-    .nav-label--inactive { color: var(--grey-600); }
+    .toast.show { transform: translateX(-50%) translateY(0); }
   </style>
 </head>
 <body>
-<div class="screen">
+<div class="app">
 
-  <!-- ── Hero ──────────────────────────────────────────── -->
-  <section class="hero">
-    <h1 class="hero__title">Home</h1>
-    <div class="hero__bottom">
-      <p class="hero__headline">Where travel begins</p>
-      <p class="hero__subtitle">Plan, record and share your trips</p>
-      <div class="hero__actions">
-        <button class="btn btn--primary">
-          <!-- Record dot icon -->
-          <svg viewBox="0 0 24 24" fill="white" xmlns="http://www.w3.org/2000/svg">
-            <circle cx="12" cy="12" r="6"/>
-          </svg>
-          Record trip
-        </button>
-        <button class="btn btn--outline">How this works</button>
+  <!-- ══════════════════════════════════════════════
+       SCREEN 1 — SETUP
+  ══════════════════════════════════════════════ -->
+  <div id="screen-setup" class="screen active">
+    <div class="setup-header">
+      <div class="logo">
+        <div class="logo-icon">
+          <svg viewBox="0 0 24 24"><path d="M20 8h-3V4H3c-1.1 0-2 .9-2 2v11h2c0 1.66 1.34 3 3 3s3-1.34 3-3h6c0 1.66 1.34 3 3 3s3-1.34 3-3h2v-5l-3-4zM6 18.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm13.5-9 1.96 2.5H17V9.5h2.5zm-1.5 9c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/></svg>
+        </div>
+        <span class="logo-name">MovePlan</span>
       </div>
+      <h1 class="setup-title">Plan your<br>perfect move</h1>
+      <p class="setup-subtitle">Document your belongings and get accurate quotes from moving companies.</p>
     </div>
-  </section>
 
-  <!-- ── Content ───────────────────────────────────────── -->
-  <div class="content">
-    <p class="section-heading">Top 10 trips today</p>
+    <div class="setup-card">
+      <p class="setup-card-title">Where are you moving?</p>
 
-    <article class="trip-card">
-      <!-- Photo placeholder -->
-      <div class="trip-card__photo">
-        <svg viewBox="0 0 406 391" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice">
-          <!-- Tree silhouettes -->
-          <rect width="406" height="391" fill="none"/>
-          <polygon points="80,391 110,200 140,391" fill="#fff"/>
-          <polygon points="60,391 100,150 140,391" fill="#fff"/>
-          <polygon points="160,391 195,180 230,391" fill="#fff"/>
-          <polygon points="140,391 185,130 230,391" fill="#fff"/>
-          <polygon points="250,391 280,210 310,391" fill="#fff"/>
-          <polygon points="230,391 270,160 315,391" fill="#fff"/>
-          <polygon points="330,391 360,220 390,391" fill="#fff"/>
-          <polygon points="310,391 355,175 400,391" fill="#fff"/>
-          <rect x="97" y="330" width="12" height="61" fill="#fff"/>
-          <rect x="183" y="320" width="12" height="71" fill="#fff"/>
-          <rect x="270" y="335" width="12" height="56" fill="#fff"/>
-          <rect x="353" y="340" width="12" height="51" fill="#fff"/>
-        </svg>
+      <div class="form-group">
+        <label class="form-label">From address</label>
+        <input class="form-input" id="from-address" type="text" placeholder="Current address" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">To address</label>
+        <input class="form-input" id="to-address" type="text" placeholder="New address" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">Move date (optional)</label>
+        <input class="form-input" id="move-date" type="date" />
       </div>
 
-      <div class="trip-card__body">
-        <div class="trip-card__text">
-
-          <!-- Avatar group -->
-          <div class="avatar-group">
-            <div class="avatar">
-              <svg viewBox="0 0 24 24" fill="white"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v1h16v-1c0-2.66-5.33-4-8-4z"/></svg>
-            </div>
-            <div class="avatar">
-              <svg viewBox="0 0 24 24" fill="white"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v1h16v-1c0-2.66-5.33-4-8-4z"/></svg>
-            </div>
-          </div>
-
-          <p class="trip-card__caption">Caption</p>
-          <p class="trip-card__heading">The heading can go to two lines or three lines</p>
-        </div>
-
-        <div class="trip-card__actions">
-          <button class="btn btn--light">Button</button>
-
-          <!-- Fullscreen -->
-          <button class="icon-btn" aria-label="Fullscreen">
-            <svg viewBox="0 0 24 24" fill="#3a3a3a" xmlns="http://www.w3.org/2000/svg">
-              <path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/>
-            </svg>
-          </button>
-
-          <!-- Bookmark -->
-          <button class="icon-btn" aria-label="Bookmark">
-            <svg viewBox="0 0 24 24" fill="#3a3a3a" xmlns="http://www.w3.org/2000/svg">
-              <path d="M17 3H7c-1.1 0-1.99.9-1.99 2L5 21l7-3 7 3V5c0-1.1-.9-2-2-2z"/>
-            </svg>
-          </button>
-
-          <!-- Share -->
-          <button class="icon-btn" aria-label="Share">
-            <svg viewBox="0 0 24 24" fill="#3a3a3a" xmlns="http://www.w3.org/2000/svg">
-              <path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92 1.61 0 2.92-1.31 2.92-2.92s-1.31-2.92-2.92-2.92z"/>
-            </svg>
-          </button>
-        </div>
-      </div>
-    </article>
+      <button class="btn btn--primary btn--full" onclick="startInventory()">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.17 4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+        Start building inventory
+      </button>
+      <p class="setup-hint">Addresses can be updated later</p>
+    </div>
   </div>
 
-  <!-- ── Bottom Nav ────────────────────────────────────── -->
-  <nav class="nav-bar">
+  <!-- ══════════════════════════════════════════════
+       SCREEN 2 — INVENTORY
+  ══════════════════════════════════════════════ -->
+  <div id="screen-inventory" class="screen">
 
-    <!-- Home (active) -->
-    <div class="nav-item">
-      <div class="nav-pill nav-pill--active">
-        <svg viewBox="0 0 24 24" fill="#0032d2" xmlns="http://www.w3.org/2000/svg">
-          <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/>
-        </svg>
-        <span class="nav-label nav-label--active">Home</span>
+    <div class="inv-topbar">
+      <div class="inv-bar-row">
+        <span class="inv-appname">MovePlan</span>
+        <button class="inv-edit-btn" onclick="editAddresses()">Edit addresses</button>
+      </div>
+
+      <div class="route-card">
+        <div class="route-row">
+          <div class="route-dot route-dot--from"></div>
+          <span class="route-lbl">From</span>
+          <span class="route-addr" id="disp-from">—</span>
+        </div>
+        <div class="route-div"></div>
+        <div class="route-row">
+          <div class="route-dot route-dot--to"></div>
+          <span class="route-lbl">To</span>
+          <span class="route-addr" id="disp-to">—</span>
+        </div>
+      </div>
+
+      <div class="stats-row">
+        <div class="stat-chip" id="stat-types">0 item types</div>
+        <div class="stat-chip" id="stat-pieces">0 pieces</div>
       </div>
     </div>
 
-    <!-- Saved trips -->
-    <div class="nav-item">
-      <div class="nav-pill">
-        <svg viewBox="0 0 24 24" fill="#636363" xmlns="http://www.w3.org/2000/svg">
-          <path d="M17 3H7c-1.1 0-1.99.9-1.99 2L5 21l7-3 7 3V5c0-1.1-.9-2-2-2z"/>
-        </svg>
-        <span class="nav-label nav-label--inactive">Saved trips</span>
+    <div class="inv-body">
+      <div id="empty-state" class="empty-state">
+        <div class="empty-icon">
+          <svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 3c1.93 0 3.5 1.57 3.5 3.5S13.93 13 12 13s-3.5-1.57-3.5-3.5S10.07 6 12 6zm7 13H5v-.23c0-.62.28-1.2.76-1.58C7.47 15.82 9.64 15 12 15s4.53.82 6.24 2.19c.48.38.76.97.76 1.58V19z"/></svg>
+        </div>
+        <p class="empty-title">No items yet</p>
+        <p class="empty-sub">Tap "Add item" to start documenting your belongings.</p>
       </div>
+      <div id="item-list" class="item-list" style="display:none;"></div>
     </div>
 
-    <!-- Profile -->
-    <div class="nav-item">
-      <div class="nav-pill">
-        <svg viewBox="0 0 24 24" fill="#636363" xmlns="http://www.w3.org/2000/svg">
-          <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
-        </svg>
-        <span class="nav-label nav-label--inactive">Profile</span>
-      </div>
+    <div class="inv-footer">
+      <button class="btn btn--primary btn--full" onclick="openAddModal()">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+        Add item
+      </button>
+      <button class="btn btn--dark btn--full" id="pdf-btn" onclick="generatePDF()" disabled>
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M20 2H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-8.5 7.5c0 .83-.67 1.5-1.5 1.5H9v2H7.5V7H10c.83 0 1.5.67 1.5 1.5v1zm5 2c0 .83-.67 1.5-1.5 1.5h-2.5V7H15c.83 0 1.5.67 1.5 1.5v3zm4-3H19v1h1.5V11H19v2h-1.5V7h3v1.5zM9 9.5h1v-1H9v1zM4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6zm10 5.5h1v-3h-1v3z"/></svg>
+        Export PDF report
+      </button>
+      <p class="pdf-hint" id="pdf-hint">Add items to enable PDF export</p>
     </div>
+  </div>
 
-  </nav>
 </div>
+
+<!-- ══════════════════════════════════════════════
+     MODAL — ADD / EDIT ITEM
+══════════════════════════════════════════════ -->
+<div class="overlay" id="overlay" onclick="closeOverlay(event)">
+  <div class="modal">
+    <div class="modal-hd">
+      <span class="modal-title" id="modal-title">Add item</span>
+      <button class="modal-cls" onclick="closeModal()">✕</button>
+    </div>
+
+    <div class="modal-body">
+      <div class="form-group">
+        <label class="form-label">Item type</label>
+        <div class="type-toggle">
+          <button class="type-btn active" id="btn-custom" onclick="setType('custom')">Custom item</button>
+          <button class="type-btn"        id="btn-ikea"   onclick="setType('ikea')">IKEA product</button>
+        </div>
+      </div>
+
+      <div class="ikea-hint" id="ikea-hint">
+        Tip: Find exact product dimensions on
+        <a href="https://www.ikea.se" target="_blank" rel="noopener">ikea.se</a> — search by product name.
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Item name</label>
+        <input class="form-input" id="f-name" type="text" placeholder="e.g. KALLAX shelf unit" />
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Quantity</label>
+          <input class="form-input" id="f-qty" type="number" min="1" value="1" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Weight (optional)</label>
+          <input class="form-input" id="f-weight" type="text" placeholder="e.g. 42 kg" />
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Dimensions (optional)</label>
+        <input class="form-input" id="f-dim" type="text" placeholder="e.g. 147 × 39 × 147 cm" />
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Notes (optional)</label>
+        <textarea class="form-input" id="f-notes" placeholder="e.g. Disassemble before moving, fragile…"></textarea>
+      </div>
+
+      <input type="hidden" id="f-id" />
+
+      <button class="btn btn--primary btn--full" onclick="saveItem()">Save item</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- jsPDF + autoTable via CDN -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+
+<script>
+// ── State ────────────────────────────────────────────────────
+let state = { fromAddress: '', toAddress: '', moveDate: '', items: [] };
+
+(function init() {
+  try {
+    const saved = localStorage.getItem('moveplan');
+    if (saved) {
+      state = { ...state, ...JSON.parse(saved) };
+      if (state.fromAddress || state.toAddress || state.items.length) {
+        showScreen('screen-inventory');
+        renderAddresses();
+        renderItems();
+      }
+    }
+  } catch(_) {}
+})();
+
+function persist() { localStorage.setItem('moveplan', JSON.stringify(state)); }
+
+// ── Screens ──────────────────────────────────────────────────
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+function startInventory() {
+  state.fromAddress = document.getElementById('from-address').value.trim();
+  state.toAddress   = document.getElementById('to-address').value.trim();
+  state.moveDate    = document.getElementById('move-date').value;
+  persist();
+  showScreen('screen-inventory');
+  renderAddresses();
+  renderItems();
+}
+
+function editAddresses() {
+  document.getElementById('from-address').value = state.fromAddress;
+  document.getElementById('to-address').value   = state.toAddress;
+  document.getElementById('move-date').value     = state.moveDate;
+  showScreen('screen-setup');
+}
+
+// ── Render ───────────────────────────────────────────────────
+function renderAddresses() {
+  document.getElementById('disp-from').textContent = state.fromAddress || '[Address not set]';
+  document.getElementById('disp-to').textContent   = state.toAddress   || '[Address not set]';
+}
+
+function renderItems() {
+  const list   = document.getElementById('item-list');
+  const empty  = document.getElementById('empty-state');
+  const pdfBtn = document.getElementById('pdf-btn');
+  const hint   = document.getElementById('pdf-hint');
+
+  const types  = state.items.length;
+  const pieces = state.items.reduce((s, i) => s + (parseInt(i.quantity) || 1), 0);
+  document.getElementById('stat-types').textContent  = `${types} item type${types !== 1 ? 's' : ''}`;
+  document.getElementById('stat-pieces').textContent = `${pieces} piece${pieces !== 1 ? 's' : ''}`;
+
+  if (!types) {
+    empty.style.display = 'flex';
+    list.style.display  = 'none';
+    pdfBtn.disabled     = true;
+    hint.style.display  = 'block';
+    return;
+  }
+
+  empty.style.display = 'none';
+  list.style.display  = 'flex';
+  pdfBtn.disabled     = false;
+  hint.style.display  = 'none';
+
+  list.innerHTML = state.items.map(item => `
+    <div class="item-card">
+      <div class="item-card__head">
+        <span class="item-badge item-badge--${item.type}">${item.type === 'ikea' ? 'IKEA' : 'Custom'}</span>
+        <span class="item-name">${esc(item.name)}</span>
+        <div class="item-acts">
+          <button class="icon-btn icon-btn--edit" onclick="openEditModal('${item.id}')" title="Edit">
+            <svg viewBox="0 0 24 24"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04a1 1 0 0 0 0-1.41l-2.34-2.34a1 1 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>
+          </button>
+          <button class="icon-btn icon-btn--del" onclick="deleteItem('${item.id}')" title="Delete">
+            <svg viewBox="0 0 24 24"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>
+          </button>
+        </div>
+      </div>
+      <div class="item-meta">
+        <div class="meta-item"><span class="meta-lbl">Qty</span><span class="meta-val">${item.quantity}</span></div>
+        ${item.dimensions ? `<div class="meta-item"><span class="meta-lbl">Dimensions</span><span class="meta-val">${esc(item.dimensions)}</span></div>` : ''}
+        ${item.weight     ? `<div class="meta-item"><span class="meta-lbl">Weight</span><span class="meta-val">${esc(item.weight)}</span></div>` : ''}
+      </div>
+      ${item.notes ? `<div class="item-notes">${esc(item.notes)}</div>` : ''}
+    </div>
+  `).join('');
+}
+
+function esc(str) {
+  return String(str || '')
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ── Item CRUD ────────────────────────────────────────────────
+let currentType = 'custom';
+
+function setType(t) {
+  currentType = t;
+  document.getElementById('btn-custom').classList.toggle('active', t === 'custom');
+  document.getElementById('btn-ikea').classList.toggle('active',   t === 'ikea');
+  document.getElementById('ikea-hint').classList.toggle('show',    t === 'ikea');
+}
+
+function openAddModal() {
+  document.getElementById('modal-title').textContent = 'Add item';
+  document.getElementById('f-id').value      = '';
+  document.getElementById('f-name').value    = '';
+  document.getElementById('f-qty').value     = '1';
+  document.getElementById('f-weight').value  = '';
+  document.getElementById('f-dim').value     = '';
+  document.getElementById('f-notes').value   = '';
+  setType('custom');
+  openModal();
+}
+
+function openEditModal(id) {
+  const item = state.items.find(i => i.id === id);
+  if (!item) return;
+  document.getElementById('modal-title').textContent = 'Edit item';
+  document.getElementById('f-id').value      = item.id;
+  document.getElementById('f-name').value    = item.name;
+  document.getElementById('f-qty').value     = item.quantity;
+  document.getElementById('f-weight').value  = item.weight  || '';
+  document.getElementById('f-dim').value     = item.dimensions || '';
+  document.getElementById('f-notes').value   = item.notes   || '';
+  setType(item.type);
+  openModal();
+}
+
+function deleteItem(id) {
+  state.items = state.items.filter(i => i.id !== id);
+  persist();
+  renderItems();
+  toast('Item removed');
+}
+
+function saveItem() {
+  const name = document.getElementById('f-name').value.trim();
+  if (!name) { document.getElementById('f-name').focus(); return; }
+
+  const id = document.getElementById('f-id').value || String(Date.now());
+  const item = {
+    id,
+    name,
+    type:       currentType,
+    quantity:   Math.max(1, parseInt(document.getElementById('f-qty').value) || 1),
+    weight:     document.getElementById('f-weight').value.trim(),
+    dimensions: document.getElementById('f-dim').value.trim(),
+    notes:      document.getElementById('f-notes').value.trim()
+  };
+
+  const idx = state.items.findIndex(i => i.id === id);
+  if (idx >= 0) { state.items[idx] = item; toast('Item updated'); }
+  else          { state.items.push(item);  toast('Item added');   }
+
+  persist();
+  renderItems();
+  closeModal();
+}
+
+// ── Modal ────────────────────────────────────────────────────
+function openModal()  { document.getElementById('overlay').classList.add('open'); }
+function closeModal() { document.getElementById('overlay').classList.remove('open'); }
+function closeOverlay(e) { if (e.target === document.getElementById('overlay')) closeModal(); }
+
+// ── Toast ────────────────────────────────────────────────────
+function toast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), 2600);
+}
+
+// ── PDF ──────────────────────────────────────────────────────
+function generatePDF() {
+  if (!state.items.length) return;
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+
+  const today = new Date().toLocaleDateString('en-GB', { year:'numeric', month:'long', day:'numeric' });
+  const moveDateStr = state.moveDate
+    ? new Date(state.moveDate + 'T12:00:00').toLocaleDateString('en-GB', { year:'numeric', month:'long', day:'numeric' })
+    : null;
+
+  // Header band
+  doc.setFillColor(0, 50, 210);
+  doc.rect(0, 0, 210, 34, 'F');
+  doc.setTextColor(255,255,255);
+  doc.setFont('helvetica','bold');
+  doc.setFontSize(18);
+  doc.text('Moving Inventory', 14, 13);
+  doc.setFont('helvetica','normal');
+  doc.setFontSize(9);
+  doc.text(`Generated: ${today}`, 14, 20);
+  if (moveDateStr) doc.text(`Move date: ${moveDateStr}`, 14, 26);
+
+  // Address section
+  doc.setTextColor(30,30,30);
+  doc.setFillColor(245,247,255);
+  doc.roundedRect(10, 38, 90, 22, 2, 2, 'F');
+  doc.roundedRect(110, 38, 90, 22, 2, 2, 'F');
+
+  doc.setFont('helvetica','bold'); doc.setFontSize(8);
+  doc.setTextColor(0,50,210);
+  doc.text('FROM', 15, 44);
+  doc.text('TO', 115, 44);
+  doc.setFont('helvetica','normal'); doc.setFontSize(10);
+  doc.setTextColor(30,30,30);
+  doc.text(state.fromAddress || '[Address not provided]', 15, 52, { maxWidth: 82 });
+  doc.text(state.toAddress   || '[Address not provided]', 115, 52, { maxWidth: 82 });
+
+  // Table
+  const totalTypes  = state.items.length;
+  const totalPieces = state.items.reduce((s,i) => s + (parseInt(i.quantity)||1), 0);
+
+  const rows = state.items.map((item, i) => [
+    String(i + 1),
+    item.name + (item.type === 'ikea' ? ' ★' : ''),
+    String(item.quantity),
+    item.dimensions || '—',
+    item.weight     || '—',
+    item.notes      || '—'
+  ]);
+
+  doc.autoTable({
+    startY: 66,
+    head: [['#', 'Item name', 'Qty', 'Dimensions', 'Weight', 'Notes']],
+    body: rows,
+    foot: [[{
+      content: `${totalTypes} item type${totalTypes!==1?'s':''} · ${totalPieces} piece${totalPieces!==1?'s':''}`,
+      colSpan: 6,
+      styles: { fontStyle:'bold', halign:'right', fillColor:[240,243,255], textColor:[0,50,210] }
+    }]],
+    styles: { font:'helvetica', fontSize:9, cellPadding:{ top:4,bottom:4,left:4,right:4 }, overflow:'linebreak' },
+    headStyles: { fillColor:[0,50,210], textColor:[255,255,255], fontStyle:'bold', fontSize:9 },
+    alternateRowStyles: { fillColor:[249,250,255] },
+    columnStyles: {
+      0: { cellWidth:10 },
+      1: { cellWidth:55 },
+      2: { cellWidth:12 },
+      3: { cellWidth:42 },
+      4: { cellWidth:22 },
+      5: { cellWidth:'auto' }
+    },
+    margin: { left:10, right:10 }
+  });
+
+  // Footer
+  const ph = doc.internal.pageSize.height;
+  doc.setFontSize(7.5); doc.setTextColor(150);
+  doc.text('This document was generated for the purpose of obtaining moving quotes.  ★ = IKEA product', 10, ph - 7);
+
+  doc.save(`moving-inventory-${new Date().toISOString().split('T')[0]}.pdf`);
+  toast('PDF downloaded');
+}
+</script>
 </body>
 </html>
