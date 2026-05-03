@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Routely – Home</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;900&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --color-grey-100: #ffffff;
+      --color-grey-200: #f4f4f4;
+      --color-grey-600: #636363;
+      --color-grey-900: #212121;
+      --color-blue-200: #d8e0f7;
+      --color-blue-500: #0032d2;
+      --color-green-500: #00854a;
+      --font-main: 'Inter', sans-serif;
+    }
+
+    body {
+      font-family: var(--font-main);
+      background: #fff;
+      display: flex;
+      justify-content: center;
+    }
+
+    .screen {
+      position: relative;
+      width: 430px;
+      min-height: 100vh;
+      background: #fff;
+      overflow-x: hidden;
+    }
+
+    /* ── Hero section ─────────────────────────────────── */
+    .hero {
+      position: relative;
+      width: 100%;
+      height: 500px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 64px 12px 24px;
+    }
+
+    .hero__bg {
+      position: absolute;
+      inset: 0;
+      z-index: 0;
+    }
+
+    .hero__bg img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .hero__gradient {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(to bottom, rgba(0,0,0,0) 56.254%, rgba(0,0,0,0.8) 100%);
+    }
+
+    .hero__title {
+      position: relative;
+      z-index: 1;
+      font-size: 24px;
+      font-weight: 600;
+      line-height: 32px;
+      color: var(--color-grey-900);
+    }
+
+    .hero__bottom {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .hero__headline {
+      font-size: 32px;
+      font-weight: 900;
+      line-height: 40px;
+      letter-spacing: -1px;
+      color: #fff;
+      text-transform: capitalize;
+    }
+
+    .hero__subtitle {
+      font-size: 14px;
+      font-weight: 400;
+      line-height: 20px;
+      color: #fff;
+      width: 215px;
+    }
+
+    .hero__actions {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 8px 16px;
+      border-radius: 999px;
+      font-size: 14px;
+      font-weight: 600;
+      line-height: 18px;
+      letter-spacing: -0.28px;
+      cursor: pointer;
+      border: none;
+      font-family: var(--font-main);
+      white-space: nowrap;
+    }
+
+    .btn--primary {
+      background: var(--color-blue-500);
+      color: #fff;
+    }
+
+    .btn--outline {
+      background: transparent;
+      border: 2px solid var(--color-grey-200);
+      color: #fff;
+    }
+
+    .btn__icon {
+      width: 18px;
+      height: 18px;
+      object-fit: contain;
+    }
+
+    /* ── Content section ──────────────────────────────── */
+    .content {
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+      padding: 24px 12px;
+    }
+
+    .section-heading {
+      font-size: 18px;
+      font-weight: 600;
+      line-height: 24px;
+      color: var(--color-grey-900);
+    }
+
+    /* ── Trip card ────────────────────────────────────── */
+    .trip-card {
+      background: var(--color-green-500);
+      border-radius: 12px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .trip-card__image {
+      width: 100%;
+      height: 391px;
+      object-fit: cover;
+      display: block;
+    }
+
+    .trip-card__body {
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+      padding: 24px 12px;
+    }
+
+    .trip-card__text {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .avatar-group {
+      display: flex;
+      align-items: center;
+      padding-right: 8px;
+    }
+
+    .avatar {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      object-fit: cover;
+      margin-right: -8px;
+      display: block;
+    }
+
+    .trip-card__caption {
+      font-size: 12px;
+      font-weight: 600;
+      line-height: 16px;
+      letter-spacing: 0.5px;
+      color: #fff;
+    }
+
+    .trip-card__heading {
+      font-size: 24px;
+      font-weight: 600;
+      line-height: 32px;
+      color: #f4f4f4;
+    }
+
+    .trip-card__actions {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .btn--light {
+      background: #f2f5fb;
+      color: var(--color-grey-900);
+      font-size: 14px;
+      font-weight: 600;
+      line-height: 22px;
+    }
+
+    .icon-btn {
+      width: 38px;
+      height: 38px;
+      border-radius: 999px;
+      background: #f2f5fb;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      border: none;
+      flex-shrink: 0;
+    }
+
+    .icon-btn img {
+      width: 21px;
+      height: 21px;
+      object-fit: contain;
+    }
+
+    /* ── Bottom Nav ───────────────────────────────────── */
+    .nav-bar {
+      position: sticky;
+      bottom: 0;
+      width: 430px;
+      background: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 12px 12px 24px;
+      z-index: 100;
+    }
+
+    .nav-item {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .nav-pill {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 4px 24px;
+      border-radius: 24px;
+    }
+
+    .nav-pill--active {
+      background: var(--color-blue-200);
+    }
+
+    .nav-pill img {
+      width: 24px;
+      height: 24px;
+      object-fit: contain;
+    }
+
+    .nav-label {
+      font-size: 10px;
+      font-weight: 500;
+      line-height: 12px;
+      margin-top: 2px;
+      white-space: nowrap;
+    }
+
+    .nav-label--active { color: var(--color-blue-500); }
+    .nav-label--inactive { color: var(--color-grey-600); }
+  </style>
+</head>
+<body>
+  <div class="screen">
+
+    <!-- Hero -->
+    <section class="hero">
+      <div class="hero__bg">
+        <img src="https://www.figma.com/api/mcp/asset/b8b00f1f-8740-4010-8fe9-9a533617815d" alt="Mountain biker on cliff" />
+        <div class="hero__gradient"></div>
+      </div>
+
+      <h1 class="hero__title">Home</h1>
+
+      <div class="hero__bottom">
+        <p class="hero__headline">Where travel begins</p>
+        <p class="hero__subtitle">Plan, record and share your trips</p>
+        <div class="hero__actions">
+          <button class="btn btn--primary">
+            <img class="btn__icon" src="https://www.figma.com/api/mcp/asset/2978fe82-b818-486c-a219-f6753765892d" alt="" />
+            Record trip
+          </button>
+          <button class="btn btn--outline">How this works</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Content -->
+    <div class="content">
+      <p class="section-heading">Top 10 trips today</p>
+
+      <!-- Trip card -->
+      <article class="trip-card">
+        <img
+          class="trip-card__image"
+          src="https://www.figma.com/api/mcp/asset/fb321190-d57e-40f7-b493-f4f2fc156821"
+          alt="Hiker in forest"
+        />
+        <div class="trip-card__body">
+          <div class="trip-card__text">
+            <div class="avatar-group">
+              <img class="avatar" src="https://www.figma.com/api/mcp/asset/d696d5ee-cea6-45bc-8212-e957a064bb50" alt="User avatar" />
+              <img class="avatar" src="https://www.figma.com/api/mcp/asset/22db218c-4adc-439c-97b7-d57de2b484de" alt="User avatar" />
+            </div>
+            <p class="trip-card__caption">Caption</p>
+            <p class="trip-card__heading">The heading can go to two lines or three lines</p>
+          </div>
+          <div class="trip-card__actions">
+            <button class="btn btn--light">Button</button>
+            <button class="icon-btn" aria-label="Fullscreen">
+              <img src="https://www.figma.com/api/mcp/asset/709c45ac-8c6c-4674-bdfb-2fd30503a44d" alt="" />
+            </button>
+            <button class="icon-btn" aria-label="Bookmark">
+              <img src="https://www.figma.com/api/mcp/asset/f8542ece-bdc1-49d6-b742-13862b26952c" alt="" />
+            </button>
+            <button class="icon-btn" aria-label="Share">
+              <img src="https://www.figma.com/api/mcp/asset/ac1233e7-1b56-4c7a-927a-90df22e07119" alt="" />
+            </button>
+          </div>
+        </div>
+      </article>
+    </div>
+
+    <!-- Bottom Nav -->
+    <nav class="nav-bar">
+      <div class="nav-item">
+        <div class="nav-pill nav-pill--active">
+          <img src="https://www.figma.com/api/mcp/asset/49fdee7a-cd51-4b7d-9fe1-bbb3b4c340ed" alt="Home" />
+          <span class="nav-label nav-label--active">Home</span>
+        </div>
+      </div>
+      <div class="nav-item">
+        <div class="nav-pill">
+          <img src="https://www.figma.com/api/mcp/asset/ba9bc618-ee86-4d67-880d-965e857972b8" alt="Saved trips" />
+          <span class="nav-label nav-label--inactive">Saved trips</span>
+        </div>
+      </div>
+      <div class="nav-item">
+        <div class="nav-pill">
+          <img src="https://www.figma.com/api/mcp/asset/ac1233e7-1b56-4c7a-927a-90df22e07119" alt="Profile" />
+          <span class="nav-label nav-label--inactive">Profile</span>
+        </div>
+      </div>
+    </nav>
+
+  </div>
+</body>
+</html>
