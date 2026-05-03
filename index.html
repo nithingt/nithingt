@@ -11,74 +11,85 @@
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      --color-grey-100: #ffffff;
-      --color-grey-200: #f4f4f4;
-      --color-grey-600: #636363;
-      --color-grey-900: #212121;
-      --color-blue-200: #d8e0f7;
-      --color-blue-500: #0032d2;
-      --color-green-500: #00854a;
-      --font-main: 'Inter', sans-serif;
+      --grey-200: #f4f4f4;
+      --grey-600: #636363;
+      --grey-900: #212121;
+      --blue-200: #d8e0f7;
+      --blue-500: #0032d2;
+      --green-500: #00854a;
+      --font: 'Inter', sans-serif;
     }
 
     body {
-      font-family: var(--font-main);
-      background: #fff;
+      font-family: var(--font);
+      background: #e8e8e8;
       display: flex;
       justify-content: center;
+      min-height: 100vh;
     }
 
     .screen {
-      position: relative;
       width: 430px;
       min-height: 100vh;
       background: #fff;
-      overflow-x: hidden;
+      display: flex;
+      flex-direction: column;
     }
 
-    /* ── Hero section ─────────────────────────────────── */
+    /* ── Hero ─────────────────────────────────────────── */
     .hero {
       position: relative;
-      width: 100%;
       height: 500px;
+      flex-shrink: 0;
       overflow: hidden;
       display: flex;
       flex-direction: column;
       justify-content: space-between;
       padding: 64px 12px 24px;
+      /* Mountain landscape placeholder: sky blue → green hills */
+      background: linear-gradient(
+        180deg,
+        #6ab4d8 0%,
+        #87ceeb 30%,
+        #5a9e6f 60%,
+        #3d7a50 80%,
+        #2d5a3a 100%
+      );
     }
 
-    .hero__bg {
+    .hero::after {
+      content: '';
       position: absolute;
       inset: 0;
+      background: linear-gradient(to bottom, rgba(0,0,0,0) 56%, rgba(0,0,0,0.8) 100%);
+      pointer-events: none;
+    }
+
+    /* Mountain silhouette suggestion */
+    .hero::before {
+      content: '';
+      position: absolute;
+      bottom: 140px;
+      left: 0;
+      right: 0;
+      height: 180px;
+      background: linear-gradient(135deg, #4a8a5e 40%, #5fa872 60%, #3d7050 100%);
+      clip-path: polygon(0 100%, 15% 40%, 28% 65%, 42% 20%, 55% 50%, 68% 30%, 80% 55%, 92% 35%, 100% 60%, 100% 100%);
       z-index: 0;
-    }
-
-    .hero__bg img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      display: block;
-    }
-
-    .hero__gradient {
-      position: absolute;
-      inset: 0;
-      background: linear-gradient(to bottom, rgba(0,0,0,0) 56.254%, rgba(0,0,0,0.8) 100%);
     }
 
     .hero__title {
       position: relative;
-      z-index: 1;
+      z-index: 2;
       font-size: 24px;
       font-weight: 600;
       line-height: 32px;
-      color: var(--color-grey-900);
+      color: var(--grey-900);
     }
 
     .hero__bottom {
       position: relative;
-      z-index: 1;
+      z-index: 2;
       display: flex;
       flex-direction: column;
       gap: 12px;
@@ -105,8 +116,10 @@
       display: flex;
       gap: 12px;
       align-items: center;
+      flex-wrap: wrap;
     }
 
+    /* ── Buttons ──────────────────────────────────────── */
     .btn {
       display: inline-flex;
       align-items: center;
@@ -120,28 +133,32 @@
       letter-spacing: -0.28px;
       cursor: pointer;
       border: none;
-      font-family: var(--font-main);
+      font-family: var(--font);
       white-space: nowrap;
     }
 
-    .btn--primary {
-      background: var(--color-blue-500);
-      color: #fff;
+    .btn--primary { background: var(--blue-500); color: #fff; }
+    .btn--outline  { background: transparent; border: 2px solid var(--grey-200); color: #fff; }
+    .btn--light    { background: #f2f5fb; color: var(--grey-900); line-height: 22px; }
+
+    .btn svg { width: 18px; height: 18px; flex-shrink: 0; }
+
+    .icon-btn {
+      width: 38px;
+      height: 38px;
+      border-radius: 999px;
+      background: #f2f5fb;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      border: none;
+      flex-shrink: 0;
     }
 
-    .btn--outline {
-      background: transparent;
-      border: 2px solid var(--color-grey-200);
-      color: #fff;
-    }
+    .icon-btn svg { width: 22px; height: 22px; }
 
-    .btn__icon {
-      width: 18px;
-      height: 18px;
-      object-fit: contain;
-    }
-
-    /* ── Content section ──────────────────────────────── */
+    /* ── Content ──────────────────────────────────────── */
     .content {
       display: flex;
       flex-direction: column;
@@ -153,23 +170,39 @@
       font-size: 18px;
       font-weight: 600;
       line-height: 24px;
-      color: var(--color-grey-900);
+      color: var(--grey-900);
     }
 
     /* ── Trip card ────────────────────────────────────── */
     .trip-card {
-      background: var(--color-green-500);
+      background: var(--green-500);
       border-radius: 12px;
       overflow: hidden;
-      display: flex;
-      flex-direction: column;
     }
 
-    .trip-card__image {
+    .trip-card__photo {
       width: 100%;
       height: 391px;
-      object-fit: cover;
-      display: block;
+      /* Forest/hiker placeholder: rich greens */
+      background: linear-gradient(
+        160deg,
+        #1a3d20 0%,
+        #2d6635 30%,
+        #3a7d42 50%,
+        #2a5c30 75%,
+        #1a3d20 100%
+      );
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    /* Stylised tree silhouettes */
+    .trip-card__photo svg {
+      width: 100%;
+      height: 100%;
+      opacity: 0.35;
     }
 
     .trip-card__body {
@@ -188,17 +221,24 @@
     .avatar-group {
       display: flex;
       align-items: center;
-      padding-right: 8px;
     }
 
     .avatar {
       width: 24px;
       height: 24px;
       border-radius: 50%;
-      object-fit: cover;
-      margin-right: -8px;
-      display: block;
+      border: 1.5px solid rgba(255,255,255,0.6);
+      margin-right: -6px;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
+
+    .avatar:nth-child(1) { background: #e8a87c; }
+    .avatar:nth-child(2) { background: #7ca8e8; }
+
+    .avatar svg { width: 14px; height: 14px; }
 
     .trip-card__caption {
       font-size: 12px;
@@ -206,6 +246,7 @@
       line-height: 16px;
       letter-spacing: 0.5px;
       color: #fff;
+      margin-top: 2px;
     }
 
     .trip-card__heading {
@@ -221,51 +262,21 @@
       align-items: center;
     }
 
-    .btn--light {
-      background: #f2f5fb;
-      color: var(--color-grey-900);
-      font-size: 14px;
-      font-weight: 600;
-      line-height: 22px;
-    }
-
-    .icon-btn {
-      width: 38px;
-      height: 38px;
-      border-radius: 999px;
-      background: #f2f5fb;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      border: none;
-      flex-shrink: 0;
-    }
-
-    .icon-btn img {
-      width: 21px;
-      height: 21px;
-      object-fit: contain;
-    }
-
     /* ── Bottom Nav ───────────────────────────────────── */
     .nav-bar {
       position: sticky;
       bottom: 0;
-      width: 430px;
       background: #fff;
       display: flex;
       align-items: center;
-      justify-content: center;
       padding: 12px 12px 24px;
-      z-index: 100;
+      margin-top: auto;
+      box-shadow: 0 -1px 0 rgba(0,0,0,0.06);
     }
 
     .nav-item {
       flex: 1;
       display: flex;
-      flex-direction: column;
-      align-items: center;
       justify-content: center;
     }
 
@@ -273,116 +284,152 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: center;
       padding: 4px 24px;
       border-radius: 24px;
+      gap: 2px;
     }
 
-    .nav-pill--active {
-      background: var(--color-blue-200);
-    }
+    .nav-pill--active { background: var(--blue-200); }
 
-    .nav-pill img {
-      width: 24px;
-      height: 24px;
-      object-fit: contain;
-    }
+    .nav-pill svg { width: 24px; height: 24px; }
 
     .nav-label {
       font-size: 10px;
       font-weight: 500;
       line-height: 12px;
-      margin-top: 2px;
       white-space: nowrap;
     }
 
-    .nav-label--active { color: var(--color-blue-500); }
-    .nav-label--inactive { color: var(--color-grey-600); }
+    .nav-label--active   { color: var(--blue-500); }
+    .nav-label--inactive { color: var(--grey-600); }
   </style>
 </head>
 <body>
-  <div class="screen">
+<div class="screen">
 
-    <!-- Hero -->
-    <section class="hero">
-      <div class="hero__bg">
-        <img src="https://www.figma.com/api/mcp/asset/b8b00f1f-8740-4010-8fe9-9a533617815d" alt="Mountain biker on cliff" />
-        <div class="hero__gradient"></div>
+  <!-- ── Hero ──────────────────────────────────────────── -->
+  <section class="hero">
+    <h1 class="hero__title">Home</h1>
+    <div class="hero__bottom">
+      <p class="hero__headline">Where travel begins</p>
+      <p class="hero__subtitle">Plan, record and share your trips</p>
+      <div class="hero__actions">
+        <button class="btn btn--primary">
+          <!-- Record dot icon -->
+          <svg viewBox="0 0 24 24" fill="white" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="12" cy="12" r="6"/>
+          </svg>
+          Record trip
+        </button>
+        <button class="btn btn--outline">How this works</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Content ───────────────────────────────────────── -->
+  <div class="content">
+    <p class="section-heading">Top 10 trips today</p>
+
+    <article class="trip-card">
+      <!-- Photo placeholder -->
+      <div class="trip-card__photo">
+        <svg viewBox="0 0 406 391" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice">
+          <!-- Tree silhouettes -->
+          <rect width="406" height="391" fill="none"/>
+          <polygon points="80,391 110,200 140,391" fill="#fff"/>
+          <polygon points="60,391 100,150 140,391" fill="#fff"/>
+          <polygon points="160,391 195,180 230,391" fill="#fff"/>
+          <polygon points="140,391 185,130 230,391" fill="#fff"/>
+          <polygon points="250,391 280,210 310,391" fill="#fff"/>
+          <polygon points="230,391 270,160 315,391" fill="#fff"/>
+          <polygon points="330,391 360,220 390,391" fill="#fff"/>
+          <polygon points="310,391 355,175 400,391" fill="#fff"/>
+          <rect x="97" y="330" width="12" height="61" fill="#fff"/>
+          <rect x="183" y="320" width="12" height="71" fill="#fff"/>
+          <rect x="270" y="335" width="12" height="56" fill="#fff"/>
+          <rect x="353" y="340" width="12" height="51" fill="#fff"/>
+        </svg>
       </div>
 
-      <h1 class="hero__title">Home</h1>
+      <div class="trip-card__body">
+        <div class="trip-card__text">
 
-      <div class="hero__bottom">
-        <p class="hero__headline">Where travel begins</p>
-        <p class="hero__subtitle">Plan, record and share your trips</p>
-        <div class="hero__actions">
-          <button class="btn btn--primary">
-            <img class="btn__icon" src="https://www.figma.com/api/mcp/asset/2978fe82-b818-486c-a219-f6753765892d" alt="" />
-            Record trip
-          </button>
-          <button class="btn btn--outline">How this works</button>
-        </div>
-      </div>
-    </section>
-
-    <!-- Content -->
-    <div class="content">
-      <p class="section-heading">Top 10 trips today</p>
-
-      <!-- Trip card -->
-      <article class="trip-card">
-        <img
-          class="trip-card__image"
-          src="https://www.figma.com/api/mcp/asset/fb321190-d57e-40f7-b493-f4f2fc156821"
-          alt="Hiker in forest"
-        />
-        <div class="trip-card__body">
-          <div class="trip-card__text">
-            <div class="avatar-group">
-              <img class="avatar" src="https://www.figma.com/api/mcp/asset/d696d5ee-cea6-45bc-8212-e957a064bb50" alt="User avatar" />
-              <img class="avatar" src="https://www.figma.com/api/mcp/asset/22db218c-4adc-439c-97b7-d57de2b484de" alt="User avatar" />
+          <!-- Avatar group -->
+          <div class="avatar-group">
+            <div class="avatar">
+              <svg viewBox="0 0 24 24" fill="white"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v1h16v-1c0-2.66-5.33-4-8-4z"/></svg>
             </div>
-            <p class="trip-card__caption">Caption</p>
-            <p class="trip-card__heading">The heading can go to two lines or three lines</p>
+            <div class="avatar">
+              <svg viewBox="0 0 24 24" fill="white"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v1h16v-1c0-2.66-5.33-4-8-4z"/></svg>
+            </div>
           </div>
-          <div class="trip-card__actions">
-            <button class="btn btn--light">Button</button>
-            <button class="icon-btn" aria-label="Fullscreen">
-              <img src="https://www.figma.com/api/mcp/asset/709c45ac-8c6c-4674-bdfb-2fd30503a44d" alt="" />
-            </button>
-            <button class="icon-btn" aria-label="Bookmark">
-              <img src="https://www.figma.com/api/mcp/asset/f8542ece-bdc1-49d6-b742-13862b26952c" alt="" />
-            </button>
-            <button class="icon-btn" aria-label="Share">
-              <img src="https://www.figma.com/api/mcp/asset/ac1233e7-1b56-4c7a-927a-90df22e07119" alt="" />
-            </button>
-          </div>
+
+          <p class="trip-card__caption">Caption</p>
+          <p class="trip-card__heading">The heading can go to two lines or three lines</p>
         </div>
-      </article>
+
+        <div class="trip-card__actions">
+          <button class="btn btn--light">Button</button>
+
+          <!-- Fullscreen -->
+          <button class="icon-btn" aria-label="Fullscreen">
+            <svg viewBox="0 0 24 24" fill="#3a3a3a" xmlns="http://www.w3.org/2000/svg">
+              <path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/>
+            </svg>
+          </button>
+
+          <!-- Bookmark -->
+          <button class="icon-btn" aria-label="Bookmark">
+            <svg viewBox="0 0 24 24" fill="#3a3a3a" xmlns="http://www.w3.org/2000/svg">
+              <path d="M17 3H7c-1.1 0-1.99.9-1.99 2L5 21l7-3 7 3V5c0-1.1-.9-2-2-2z"/>
+            </svg>
+          </button>
+
+          <!-- Share -->
+          <button class="icon-btn" aria-label="Share">
+            <svg viewBox="0 0 24 24" fill="#3a3a3a" xmlns="http://www.w3.org/2000/svg">
+              <path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92 1.61 0 2.92-1.31 2.92-2.92s-1.31-2.92-2.92-2.92z"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+    </article>
+  </div>
+
+  <!-- ── Bottom Nav ────────────────────────────────────── -->
+  <nav class="nav-bar">
+
+    <!-- Home (active) -->
+    <div class="nav-item">
+      <div class="nav-pill nav-pill--active">
+        <svg viewBox="0 0 24 24" fill="#0032d2" xmlns="http://www.w3.org/2000/svg">
+          <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/>
+        </svg>
+        <span class="nav-label nav-label--active">Home</span>
+      </div>
     </div>
 
-    <!-- Bottom Nav -->
-    <nav class="nav-bar">
-      <div class="nav-item">
-        <div class="nav-pill nav-pill--active">
-          <img src="https://www.figma.com/api/mcp/asset/49fdee7a-cd51-4b7d-9fe1-bbb3b4c340ed" alt="Home" />
-          <span class="nav-label nav-label--active">Home</span>
-        </div>
+    <!-- Saved trips -->
+    <div class="nav-item">
+      <div class="nav-pill">
+        <svg viewBox="0 0 24 24" fill="#636363" xmlns="http://www.w3.org/2000/svg">
+          <path d="M17 3H7c-1.1 0-1.99.9-1.99 2L5 21l7-3 7 3V5c0-1.1-.9-2-2-2z"/>
+        </svg>
+        <span class="nav-label nav-label--inactive">Saved trips</span>
       </div>
-      <div class="nav-item">
-        <div class="nav-pill">
-          <img src="https://www.figma.com/api/mcp/asset/ba9bc618-ee86-4d67-880d-965e857972b8" alt="Saved trips" />
-          <span class="nav-label nav-label--inactive">Saved trips</span>
-        </div>
-      </div>
-      <div class="nav-item">
-        <div class="nav-pill">
-          <img src="https://www.figma.com/api/mcp/asset/ac1233e7-1b56-4c7a-927a-90df22e07119" alt="Profile" />
-          <span class="nav-label nav-label--inactive">Profile</span>
-        </div>
-      </div>
-    </nav>
+    </div>
 
-  </div>
+    <!-- Profile -->
+    <div class="nav-item">
+      <div class="nav-pill">
+        <svg viewBox="0 0 24 24" fill="#636363" xmlns="http://www.w3.org/2000/svg">
+          <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+        </svg>
+        <span class="nav-label nav-label--inactive">Profile</span>
+      </div>
+    </div>
+
+  </nav>
+</div>
 </body>
 </html>
