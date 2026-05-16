@@ -2,671 +2,1707 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>MovePlan — Moving Inventory</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1" />
+  <title>Körkortsövning — Halmstad</title>
+
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      --blue-500: #0032d2;
-      --blue-200: #d8e0f7;
-      --blue-50:  #f0f3fd;
-      --grey-900: #1a1a1a;
-      --grey-700: #444;
-      --grey-500: #777;
-      --grey-200: #e8e8e8;
-      --grey-100: #f4f4f4;
-      --green-500: #00854a;
-      --red-500:   #d63031;
-      --red-100:   #ffe6e6;
-      --font: 'Inter', sans-serif;
-      --shadow: 0 2px 12px rgba(0,0,0,0.08);
+      --bg: #fff;
+      --surface: #f7f7f7;
+      --border: #ebebeb;
+      --text: #222;
+      --muted: #717171;
+      --accent: #E61E4D;
+      --accent-light: #fff1f4;
+      --shadow-sm: 0 1px 4px rgba(0,0,0,.08);
+      --shadow-md: 0 4px 20px rgba(0,0,0,.12);
+      --shadow-lg: 0 8px 40px rgba(0,0,0,.18);
       --r: 12px;
-      --r-sm: 8px;
+      --r-lg: 24px;
     }
 
-    body {
-      font-family: var(--font);
-      background: #dde0e8;
-      display: flex;
-      justify-content: center;
-      min-height: 100vh;
+    html, body {
+      height: 100%;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: #d0d0d0;
+      overflow: hidden;
     }
 
     .app {
-      width: 430px;
-      min-height: 100vh;
-      background: #fff;
+      max-width: 430px;
+      width: 100%;
+      height: 100dvh;
+      height: 100vh;
+      margin: 0 auto;
+      position: relative;
+      background: var(--bg);
+      overflow: hidden;
+    }
+
+    /* ── Map ── */
+    #map {
+      position: absolute;
+      inset: 0;
+      z-index: 0;
+    }
+
+    .leaflet-control-attribution { display: none !important; }
+    .leaflet-control-zoom {
+      border: none !important;
+      box-shadow: var(--shadow-md) !important;
+      margin-right: 16px !important;
+      margin-bottom: 180px !important;
+    }
+    .leaflet-control-zoom a {
+      border-radius: 50% !important;
+      border: none !important;
+      font-family: 'Inter', sans-serif !important;
+      font-weight: 700 !important;
+      width: 36px !important;
+      height: 36px !important;
+      line-height: 36px !important;
+      color: var(--text) !important;
+      margin-bottom: 4px !important;
+    }
+    .leaflet-control-zoom a:hover { background: var(--surface) !important; }
+
+    /* ── Header ── */
+    .header {
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      z-index: 10;
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: rgba(255,255,255,0.94);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-bottom: 1px solid rgba(0,0,0,0.07);
+    }
+
+    .header-brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .header-logo {
+      width: 34px; height: 34px;
+      background: var(--accent);
+      border-radius: 9px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .header-logo svg { width: 18px; height: 18px; fill: #fff; }
+
+    .header-text-title {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--text);
+      letter-spacing: -0.3px;
+      line-height: 1.2;
+    }
+    .header-text-sub {
+      font-size: 11px;
+      color: var(--muted);
+      font-weight: 500;
+    }
+
+    .progress-pill {
+      background: var(--surface);
+      border: 1.5px solid var(--border);
+      border-radius: 999px;
+      padding: 5px 12px;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text);
+      white-space: nowrap;
+    }
+    .progress-pill.done {
+      background: #e8f5e9;
+      border-color: #4caf50;
+      color: #2e7d32;
+    }
+
+    /* ── Marker styles (set via JS DivIcon) ── */
+    .map-pin {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      border: 3px solid #fff;
+      font-family: 'Inter', sans-serif;
+      font-weight: 800;
+      color: #fff;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.28);
+      cursor: pointer;
+      transition: transform 0.15s;
+      font-size: 12px;
+      width: 34px;
+      height: 34px;
+    }
+    .map-pin.active {
+      transform: scale(1.25);
+      box-shadow: 0 4px 16px rgba(0,0,0,0.35);
+    }
+    .map-pin.studied {
+      opacity: 0.6;
+    }
+    .map-pin.studied::after {
+      content: '✓';
+      position: absolute;
+      bottom: -4px;
+      right: -4px;
+      width: 14px;
+      height: 14px;
+      background: #4caf50;
+      border: 2px solid #fff;
+      border-radius: 50%;
+      font-size: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* ── Bottom sheet ── */
+    .sheet {
+      position: absolute;
+      left: 0; right: 0; bottom: 0;
+      z-index: 20;
+      background: var(--bg);
+      border-radius: var(--r-lg) var(--r-lg) 0 0;
+      box-shadow: var(--shadow-lg);
+      transition: transform 0.38s cubic-bezier(0.32, 0.72, 0, 1);
       display: flex;
       flex-direction: column;
+      max-height: 68vh;
+    }
+
+    .sheet.collapsed {
+      transform: translateY(calc(100% - 90px));
+    }
+
+    .sheet-drag {
+      padding-top: 10px;
+      display: flex;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    .sheet-drag-bar {
+      width: 40px; height: 4px;
+      background: var(--border);
+      border-radius: 2px;
+    }
+
+    .sheet-header {
+      padding: 12px 20px 14px;
+      cursor: pointer;
+      user-select: none;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .sheet-header-left {}
+    .sheet-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--text);
+      letter-spacing: -0.3px;
+    }
+    .sheet-sub {
+      font-size: 13px;
+      color: var(--muted);
+      margin-top: 1px;
+    }
+
+    .sheet-chevron {
+      width: 30px; height: 30px;
+      border-radius: 50%;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    .sheet-chevron svg {
+      width: 14px; height: 14px;
+      stroke: var(--text);
+      stroke-width: 2.5;
+      fill: none;
+      transition: transform 0.3s;
+    }
+    .sheet:not(.collapsed) .sheet-chevron svg {
+      transform: rotate(180deg);
+    }
+
+    .sheet-divider { height: 1px; background: var(--border); flex-shrink: 0; }
+
+    .sheet-body {
+      flex: 1;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      padding: 8px 0 20px;
+    }
+
+    /* ── Stop list items ── */
+    .stop-item {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 11px 20px;
+      cursor: pointer;
+      transition: background 0.12s;
+      border-bottom: 1px solid var(--border);
       position: relative;
     }
+    .stop-item:last-child { border-bottom: none; }
+    .stop-item:active { background: var(--surface); }
 
-    .screen { display: none; flex-direction: column; min-height: 100vh; }
-    .screen.active { display: flex; }
-
-    /* ── Buttons ── */
-    .btn {
-      display: inline-flex; align-items: center; justify-content: center;
-      gap: 8px; padding: 13px 20px; border-radius: 999px;
-      font-size: 14px; font-weight: 600; cursor: pointer; border: none;
-      font-family: var(--font); transition: opacity .15s, transform .1s;
-      line-height: 1;
-    }
-    .btn:active { transform: scale(0.97); }
-    .btn:disabled { opacity: .45; cursor: default; }
-    .btn--primary { background: var(--blue-500); color: #fff; }
-    .btn--ghost   { background: var(--grey-100); color: var(--grey-900); }
-    .btn--dark    { background: var(--grey-900); color: #fff; }
-    .btn--full    { width: 100%; }
-    .btn svg      { width: 18px; height: 18px; flex-shrink: 0; }
-
-    .icon-btn {
-      width: 34px; height: 34px; border-radius: 50%;
-      background: var(--grey-100); border: none; cursor: pointer;
-      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
-    }
-    .icon-btn svg { width: 17px; height: 17px; }
-    .icon-btn:active { transform: scale(.93); }
-    .icon-btn--del { background: var(--red-100); }
-    .icon-btn--del svg { fill: var(--red-500); }
-    .icon-btn--edit svg { fill: #555; }
-
-    /* ── Forms ── */
-    .form-group  { display: flex; flex-direction: column; gap: 6px; }
-    .form-label  { font-size: 11px; font-weight: 700; color: var(--grey-500); text-transform: uppercase; letter-spacing: .6px; }
-    .form-input  {
-      padding: 12px 14px; border: 1.5px solid var(--grey-200);
-      border-radius: var(--r-sm); font-size: 15px; font-family: var(--font);
-      color: var(--grey-900); background: #fff; outline: none;
-      transition: border-color .15s;
-    }
-    .form-input:focus { border-color: var(--blue-500); }
-    .form-input::placeholder { color: #bbb; }
-    textarea.form-input { resize: vertical; min-height: 68px; }
-    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-
-    .type-toggle { display: grid; grid-template-columns: 1fr 1fr; border: 1.5px solid var(--grey-200); border-radius: var(--r-sm); overflow: hidden; }
-    .type-btn {
-      padding: 10px; text-align: center; font-size: 13px; font-weight: 600;
-      cursor: pointer; border: none; background: #fff; color: var(--grey-500);
-      font-family: var(--font); transition: background .15s, color .15s;
-    }
-    .type-btn.active { background: var(--blue-500); color: #fff; }
-
-    /* ══ SETUP SCREEN ══════════════════════════════ */
-    #screen-setup {
-      background: linear-gradient(155deg, #0032d2 0%, #1847e8 55%, #2a5ef5 100%);
+    .stop-num-circle {
+      width: 34px; height: 34px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      font-weight: 800;
+      color: #fff;
+      flex-shrink: 0;
     }
 
-    .setup-header {
-      padding: 64px 24px 28px;
-      display: flex; flex-direction: column; gap: 14px;
+    .stop-info { flex: 1; min-width: 0; }
+    .stop-name {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .stop-desc {
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 2px;
+    }
+    .stop-tags {
+      display: flex;
+      gap: 4px;
+      flex-wrap: wrap;
+      margin-top: 5px;
+    }
+    .stop-tag {
+      font-size: 10px;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 999px;
+      color: #fff;
+      letter-spacing: 0.1px;
     }
 
-    .logo { display: flex; align-items: center; gap: 10px; }
-    .logo-icon {
-      width: 42px; height: 42px; background: rgba(255,255,255,.18);
-      border-radius: 11px; display: flex; align-items: center; justify-content: center;
+    .stop-check {
+      width: 22px; height: 22px;
+      border-radius: 50%;
+      border: 2px solid var(--border);
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      color: transparent;
     }
-    .logo-icon svg { width: 24px; height: 24px; fill: #fff; }
-    .logo-name { font-size: 18px; font-weight: 700; color: #fff; }
-
-    .setup-title    { font-size: 34px; font-weight: 900; color: #fff; line-height: 1.15; letter-spacing: -1px; }
-    .setup-subtitle { font-size: 14px; color: rgba(255,255,255,.72); line-height: 1.5; }
-
-    .setup-card {
-      background: #fff; border-radius: 24px 24px 0 0;
-      flex: 1; padding: 28px 20px 40px;
-      display: flex; flex-direction: column; gap: 18px;
-    }
-    .setup-card-title { font-size: 17px; font-weight: 700; color: var(--grey-900); }
-    .setup-hint { font-size: 12px; color: var(--grey-500); text-align: center; }
-
-    /* ══ INVENTORY SCREEN ═══════════════════════════ */
-    .inv-topbar {
-      background: var(--blue-500);
-      padding: 52px 18px 18px;
-      display: flex; flex-direction: column; gap: 14px;
+    .stop-check.done {
+      background: #4caf50;
+      border-color: #4caf50;
+      color: #fff;
     }
 
-    .inv-bar-row {
-      display: flex; align-items: center; justify-content: space-between;
-    }
-    .inv-appname { font-size: 13px; font-weight: 600; color: rgba(255,255,255,.65); }
-    .inv-edit-btn {
-      background: rgba(255,255,255,.15); border: none; border-radius: 999px;
-      color: #fff; font-size: 12px; font-weight: 600; padding: 5px 13px;
-      cursor: pointer; font-family: var(--font);
-    }
-
-    .route-card {
-      background: rgba(255,255,255,.13); border-radius: var(--r);
-      padding: 12px 14px; display: flex; flex-direction: column; gap: 8px;
-    }
-    .route-row   { display: flex; align-items: center; gap: 10px; }
-    .route-dot   { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
-    .route-dot--from { background: #7dd3fc; }
-    .route-dot--to   { background: #fbbf24; }
-    .route-lbl   { font-size: 10px; font-weight: 700; color: rgba(255,255,255,.55); text-transform: uppercase; letter-spacing: .5px; width: 26px; flex-shrink: 0; }
-    .route-addr  { font-size: 13px; font-weight: 500; color: #fff; }
-    .route-div   { height: 1px; background: rgba(255,255,255,.18); }
-
-    .stats-row { display: flex; gap: 8px; }
-    .stat-chip { background: rgba(255,255,255,.18); border-radius: 999px; padding: 4px 12px; font-size: 12px; font-weight: 600; color: #fff; }
-
-    /* body */
-    .inv-body { flex: 1; background: var(--grey-100); display: flex; flex-direction: column; }
-
-    .empty-state {
-      display: flex; flex-direction: column; align-items: center; justify-content: center;
-      flex: 1; padding: 48px 24px; gap: 12px; text-align: center;
-    }
-    .empty-icon { width: 64px; height: 64px; background: var(--grey-200); border-radius: 50%; display: flex; align-items: center; justify-content: center; }
-    .empty-icon svg { width: 30px; height: 30px; fill: var(--grey-500); }
-    .empty-title { font-size: 16px; font-weight: 600; color: var(--grey-900); }
-    .empty-sub   { font-size: 13px; color: var(--grey-500); }
-
-    .item-list { display: flex; flex-direction: column; gap: 10px; padding: 14px 14px 20px; }
-
-    .item-card {
-      background: #fff; border-radius: var(--r); padding: 14px;
-      display: flex; flex-direction: column; gap: 9px; box-shadow: var(--shadow);
-    }
-    .item-card__head { display: flex; align-items: flex-start; gap: 8px; }
-    .item-badge {
-      padding: 3px 8px; border-radius: 999px;
-      font-size: 10px; font-weight: 700; letter-spacing: .4px; flex-shrink: 0; margin-top: 1px;
-    }
-    .item-badge--ikea   { background: var(--blue-50); color: var(--blue-500); }
-    .item-badge--custom { background: var(--grey-100); color: var(--grey-700); }
-    .item-name  { font-size: 15px; font-weight: 600; color: var(--grey-900); flex: 1; }
-    .item-acts  { display: flex; gap: 4px; margin-left: auto; }
-    .item-meta  { display: flex; gap: 14px; flex-wrap: wrap; }
-    .meta-item  { display: flex; flex-direction: column; gap: 1px; }
-    .meta-lbl   { font-size: 10px; font-weight: 600; color: var(--grey-500); text-transform: uppercase; letter-spacing: .4px; }
-    .meta-val   { font-size: 13px; font-weight: 500; color: var(--grey-900); }
-    .item-notes { font-size: 13px; color: var(--grey-500); font-style: italic; border-top: 1px solid var(--grey-200); padding-top: 8px; }
-
-    .inv-footer {
-      padding: 14px; background: #fff;
-      border-top: 1px solid var(--grey-200);
-      display: flex; flex-direction: column; gap: 8px;
-    }
-    .pdf-hint { font-size: 12px; color: var(--grey-500); text-align: center; padding: 2px 0; }
-
-    /* ══ MODAL ═══════════════════════════════════════ */
+    /* ── Theory overlay + drawer ── */
     .overlay {
-      position: fixed; inset: 0; background: rgba(0,0,0,.5);
-      z-index: 100; display: none; align-items: flex-end; justify-content: center;
+      position: absolute;
+      inset: 0;
+      background: rgba(0,0,0,0.45);
+      z-index: 30;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s;
     }
-    .overlay.open { display: flex; }
+    .overlay.open {
+      opacity: 1;
+      pointer-events: all;
+    }
 
-    .modal {
-      background: #fff; border-radius: 24px 24px 0 0;
-      width: 430px; max-height: 92vh; overflow-y: auto;
-      padding: 22px 20px 40px;
-      display: flex; flex-direction: column; gap: 18px;
-      animation: up .22s ease-out;
+    .theory-drawer {
+      position: absolute;
+      left: 0; right: 0; bottom: 0;
+      z-index: 40;
+      background: var(--bg);
+      border-radius: var(--r-lg) var(--r-lg) 0 0;
+      max-height: 88vh;
+      display: flex;
+      flex-direction: column;
+      transform: translateY(100%);
+      transition: transform 0.38s cubic-bezier(0.32, 0.72, 0, 1);
+      box-shadow: var(--shadow-lg);
     }
-    @keyframes up { from { transform: translateY(100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+    .theory-drawer.open { transform: translateY(0); }
 
-    .modal-hd   { display: flex; align-items: center; justify-content: space-between; }
-    .modal-title{ font-size: 18px; font-weight: 700; color: var(--grey-900); }
-    .modal-cls  {
-      width: 30px; height: 30px; border-radius: 50%; background: var(--grey-100);
-      border: none; cursor: pointer; font-size: 17px; color: var(--grey-700);
-      display: flex; align-items: center; justify-content: center;
+    .theory-drag {
+      padding-top: 10px;
+      display: flex;
+      justify-content: center;
+      flex-shrink: 0;
     }
-    .modal-body { display: flex; flex-direction: column; gap: 14px; }
+    .theory-drag-bar {
+      width: 40px; height: 4px;
+      background: var(--border);
+      border-radius: 2px;
+    }
 
-    .ikea-hint {
-      background: var(--blue-50); border-radius: var(--r-sm); padding: 10px 12px;
-      font-size: 13px; color: var(--blue-500); display: none; line-height: 1.5;
+    .theory-header {
+      padding: 14px 20px 0;
+      flex-shrink: 0;
     }
-    .ikea-hint.show { display: block; }
-    .ikea-hint a { color: var(--blue-500); font-weight: 600; }
 
-    /* ══ TOAST ═══════════════════════════════════════ */
-    .toast {
-      position: fixed; bottom: 24px; left: 50%;
-      transform: translateX(-50%) translateY(72px);
-      background: var(--grey-900); color: #fff;
-      padding: 9px 20px; border-radius: 999px;
-      font-size: 13px; font-weight: 500; z-index: 200;
-      transition: transform .28s ease; white-space: nowrap;
+    .theory-top-row {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      margin-bottom: 14px;
     }
-    .toast.show { transform: translateX(-50%) translateY(0); }
+
+    .theory-point-badge {
+      width: 46px; height: 46px;
+      border-radius: 13px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 19px;
+      font-weight: 800;
+      color: #fff;
+      flex-shrink: 0;
+    }
+
+    .theory-point-info { flex: 1; }
+    .theory-point-name {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--text);
+      letter-spacing: -0.4px;
+      line-height: 1.2;
+    }
+    .theory-point-desc {
+      font-size: 13px;
+      color: var(--muted);
+      margin-top: 3px;
+    }
+
+    .theory-close-btn {
+      width: 30px; height: 30px;
+      border-radius: 50%;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 14px;
+      color: var(--muted);
+      flex-shrink: 0;
+      font-family: inherit;
+    }
+
+    .theory-tabs {
+      display: flex;
+      gap: 6px;
+      overflow-x: auto;
+      padding-bottom: 14px;
+      scrollbar-width: none;
+    }
+    .theory-tabs::-webkit-scrollbar { display: none; }
+
+    .theory-tab {
+      flex-shrink: 0;
+      padding: 7px 15px;
+      border-radius: 999px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      border: 1.5px solid var(--border);
+      background: var(--bg);
+      color: var(--muted);
+      font-family: inherit;
+      transition: all 0.15s;
+    }
+    .theory-tab.active {
+      border-color: transparent;
+      color: #fff;
+    }
+
+    .theory-divider { height: 1px; background: var(--border); flex-shrink: 0; }
+
+    .theory-body {
+      flex: 1;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      padding: 20px 20px 32px;
+    }
+
+    .theory-cat { display: none; flex-direction: column; gap: 12px; }
+    .theory-cat.active { display: flex; }
+
+    .theory-cat-title-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 6px;
+    }
+    .theory-cat-icon {
+      width: 38px; height: 38px;
+      border-radius: 11px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 17px;
+      font-weight: 800;
+      color: #fff;
+    }
+    .theory-cat-title {
+      font-size: 19px;
+      font-weight: 700;
+      color: var(--text);
+      letter-spacing: -0.4px;
+    }
+
+    /* Accordion */
+    .accordion {
+      border: 1.5px solid var(--border);
+      border-radius: var(--r);
+      overflow: hidden;
+    }
+
+    .acc-section { border-bottom: 1px solid var(--border); }
+    .acc-section:last-child { border-bottom: none; }
+
+    .acc-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 16px;
+      cursor: pointer;
+      user-select: none;
+      background: var(--bg);
+      transition: background 0.12s;
+    }
+    .acc-header:active { background: var(--surface); }
+
+    .acc-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text);
+      line-height: 1.3;
+    }
+
+    .acc-chevron {
+      font-size: 11px;
+      color: var(--muted);
+      transition: transform 0.25s;
+      flex-shrink: 0;
+      margin-left: 8px;
+    }
+    .acc-section.open .acc-chevron { transform: rotate(180deg); }
+
+    .acc-body {
+      display: none;
+      padding: 4px 16px 16px;
+      background: var(--surface);
+    }
+    .acc-section.open .acc-body { display: block; }
+
+    .rule-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 9px;
+    }
+
+    .rule-item {
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+      font-size: 13.5px;
+      color: var(--text);
+      line-height: 1.55;
+    }
+
+    .rule-dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: var(--accent);
+      flex-shrink: 0;
+      margin-top: 7px;
+    }
+
+    /* Study button */
+    .study-btn {
+      width: 100%;
+      padding: 14px;
+      border-radius: var(--r);
+      border: none;
+      background: var(--text);
+      color: #fff;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      font-family: inherit;
+      transition: opacity 0.15s, transform 0.1s;
+      margin-top: 16px;
+      letter-spacing: -0.2px;
+    }
+    .study-btn:active { transform: scale(0.98); opacity: 0.9; }
+    .study-btn.done {
+      background: #4caf50;
+    }
+
+    /* Responsive desktop */
+    @media (min-width: 431px) {
+      body { display: flex; align-items: center; justify-content: center; min-height: 100vh; }
+      .app {
+        border-radius: 24px;
+        box-shadow: 0 0 0 1px rgba(0,0,0,0.06), var(--shadow-lg);
+        height: min(90vh, 900px);
+      }
+    }
   </style>
 </head>
 <body>
 <div class="app">
 
-  <!-- ══════════════════════════════════════════════
-       SCREEN 1 — SETUP
-  ══════════════════════════════════════════════ -->
-  <div id="screen-setup" class="screen active">
-    <div class="setup-header">
-      <div class="logo">
-        <div class="logo-icon">
-          <svg viewBox="0 0 24 24"><path d="M20 8h-3V4H3c-1.1 0-2 .9-2 2v11h2c0 1.66 1.34 3 3 3s3-1.34 3-3h6c0 1.66 1.34 3 3 3s3-1.34 3-3h2v-5l-3-4zM6 18.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm13.5-9 1.96 2.5H17V9.5h2.5zm-1.5 9c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/></svg>
-        </div>
-        <span class="logo-name">MovePlan</span>
+  <!-- Map -->
+  <div id="map"></div>
+
+  <!-- Header -->
+  <header class="header">
+    <div class="header-brand">
+      <div class="header-logo">
+        <svg viewBox="0 0 24 24"><path d="M18.92 6.01C18.72 5.42 18.16 5 17.5 5h-11c-.66 0-1.21.42-1.42 1.01L3 12v8c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1h12v1c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-8l-2.08-5.99zM6.5 16c-.83 0-1.5-.67-1.5-1.5S5.67 13 6.5 13s1.5.67 1.5 1.5S7.33 16 6.5 16zm11 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zM5 11l1.5-4.5h11L19 11H5z"/></svg>
       </div>
-      <h1 class="setup-title">Plan your<br>perfect move</h1>
-      <p class="setup-subtitle">Document your belongings and get accurate quotes from moving companies.</p>
+      <div>
+        <div class="header-text-title">Körkortsövning</div>
+        <div class="header-text-sub">Halmstad · Trafikverket Route</div>
+      </div>
     </div>
+    <div class="progress-pill" id="progress-pill">0 / 10 studied</div>
+  </header>
 
-    <div class="setup-card">
-      <p class="setup-card-title">Where are you moving?</p>
-
-      <div class="form-group">
-        <label class="form-label">From address</label>
-        <input class="form-input" id="from-address" type="text" placeholder="Current address" />
+  <!-- Bottom sheet -->
+  <div class="sheet collapsed" id="route-sheet">
+    <div class="sheet-drag"><div class="sheet-drag-bar"></div></div>
+    <div class="sheet-header" id="sheet-header">
+      <div class="sheet-header-left">
+        <div class="sheet-title">Driving Test Route</div>
+        <div class="sheet-sub">10 stops · ~15 km loop from Trafikverket</div>
       </div>
-      <div class="form-group">
-        <label class="form-label">To address</label>
-        <input class="form-input" id="to-address" type="text" placeholder="New address" />
+      <div class="sheet-chevron">
+        <svg viewBox="0 0 14 14"><polyline points="2,10 7,4 12,10"/></svg>
       </div>
-      <div class="form-group">
-        <label class="form-label">Move date (optional)</label>
-        <input class="form-input" id="move-date" type="date" />
-      </div>
-
-      <button class="btn btn--primary btn--full" onclick="startInventory()">
-        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.17 4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
-        Start building inventory
-      </button>
-      <p class="setup-hint">Addresses can be updated later</p>
     </div>
+    <div class="sheet-divider"></div>
+    <div class="sheet-body" id="sheet-body"></div>
   </div>
 
-  <!-- ══════════════════════════════════════════════
-       SCREEN 2 — INVENTORY
-  ══════════════════════════════════════════════ -->
-  <div id="screen-inventory" class="screen">
+  <!-- Theory overlay -->
+  <div class="overlay" id="overlay"></div>
 
-    <div class="inv-topbar">
-      <div class="inv-bar-row">
-        <span class="inv-appname">MovePlan</span>
-        <button class="inv-edit-btn" onclick="editAddresses()">Edit addresses</button>
-      </div>
-
-      <div class="route-card">
-        <div class="route-row">
-          <div class="route-dot route-dot--from"></div>
-          <span class="route-lbl">From</span>
-          <span class="route-addr" id="disp-from">—</span>
+  <!-- Theory drawer -->
+  <div class="theory-drawer" id="theory-drawer">
+    <div class="theory-drag"><div class="theory-drag-bar"></div></div>
+    <div class="theory-header">
+      <div class="theory-top-row">
+        <div class="theory-point-badge" id="t-badge">P</div>
+        <div class="theory-point-info">
+          <div class="theory-point-name" id="t-name">—</div>
+          <div class="theory-point-desc" id="t-desc">—</div>
         </div>
-        <div class="route-div"></div>
-        <div class="route-row">
-          <div class="route-dot route-dot--to"></div>
-          <span class="route-lbl">To</span>
-          <span class="route-addr" id="disp-to">—</span>
-        </div>
+        <button class="theory-close-btn" id="theory-close">✕</button>
       </div>
-
-      <div class="stats-row">
-        <div class="stat-chip" id="stat-types">0 item types</div>
-        <div class="stat-chip" id="stat-pieces">0 pieces</div>
-      </div>
+      <div class="theory-tabs" id="theory-tabs"></div>
     </div>
-
-    <div class="inv-body">
-      <div id="empty-state" class="empty-state">
-        <div class="empty-icon">
-          <svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 3c1.93 0 3.5 1.57 3.5 3.5S13.93 13 12 13s-3.5-1.57-3.5-3.5S10.07 6 12 6zm7 13H5v-.23c0-.62.28-1.2.76-1.58C7.47 15.82 9.64 15 12 15s4.53.82 6.24 2.19c.48.38.76.97.76 1.58V19z"/></svg>
-        </div>
-        <p class="empty-title">No items yet</p>
-        <p class="empty-sub">Tap "Add item" to start documenting your belongings.</p>
-      </div>
-      <div id="item-list" class="item-list" style="display:none;"></div>
-    </div>
-
-    <div class="inv-footer">
-      <button class="btn btn--primary btn--full" onclick="openAddModal()">
-        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
-        Add item
-      </button>
-      <button class="btn btn--dark btn--full" id="pdf-btn" onclick="generatePDF()" disabled>
-        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M20 2H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-8.5 7.5c0 .83-.67 1.5-1.5 1.5H9v2H7.5V7H10c.83 0 1.5.67 1.5 1.5v1zm5 2c0 .83-.67 1.5-1.5 1.5h-2.5V7H15c.83 0 1.5.67 1.5 1.5v3zm4-3H19v1h1.5V11H19v2h-1.5V7h3v1.5zM9 9.5h1v-1H9v1zM4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6zm10 5.5h1v-3h-1v3z"/></svg>
-        Export PDF report
-      </button>
-      <p class="pdf-hint" id="pdf-hint">Add items to enable PDF export</p>
-    </div>
+    <div class="theory-divider"></div>
+    <div class="theory-body" id="theory-body"></div>
   </div>
 
 </div>
 
-<!-- ══════════════════════════════════════════════
-     MODAL — ADD / EDIT ITEM
-══════════════════════════════════════════════ -->
-<div class="overlay" id="overlay" onclick="closeOverlay(event)">
-  <div class="modal">
-    <div class="modal-hd">
-      <span class="modal-title" id="modal-title">Add item</span>
-      <button class="modal-cls" onclick="closeModal()">✕</button>
-    </div>
-
-    <div class="modal-body">
-      <div class="form-group">
-        <label class="form-label">Item type</label>
-        <div class="type-toggle">
-          <button class="type-btn active" id="btn-custom" onclick="setType('custom')">Custom item</button>
-          <button class="type-btn"        id="btn-ikea"   onclick="setType('ikea')">IKEA product</button>
-        </div>
-      </div>
-
-      <div class="ikea-hint" id="ikea-hint">
-        Tip: Find exact product dimensions on
-        <a href="https://www.ikea.se" target="_blank" rel="noopener">ikea.se</a> — search by product name.
-      </div>
-
-      <div class="form-group">
-        <label class="form-label">Item name</label>
-        <input class="form-input" id="f-name" type="text" placeholder="e.g. KALLAX shelf unit" />
-      </div>
-
-      <div class="form-row">
-        <div class="form-group">
-          <label class="form-label">Quantity</label>
-          <input class="form-input" id="f-qty" type="number" min="1" value="1" />
-        </div>
-        <div class="form-group">
-          <label class="form-label">Weight (optional)</label>
-          <input class="form-input" id="f-weight" type="text" placeholder="e.g. 42 kg" />
-        </div>
-      </div>
-
-      <div class="form-group">
-        <label class="form-label">Dimensions (optional)</label>
-        <input class="form-input" id="f-dim" type="text" placeholder="e.g. 147 × 39 × 147 cm" />
-      </div>
-
-      <div class="form-group">
-        <label class="form-label">Notes (optional)</label>
-        <textarea class="form-input" id="f-notes" placeholder="e.g. Disassemble before moving, fragile…"></textarea>
-      </div>
-
-      <input type="hidden" id="f-id" />
-
-      <button class="btn btn--primary btn--full" onclick="saveItem()">Save item</button>
-    </div>
-  </div>
-</div>
-
-<div class="toast" id="toast"></div>
-
-<!-- jsPDF + autoTable via CDN -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
-
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
-// ── State ────────────────────────────────────────────────────
-let state = { fromAddress: '', toAddress: '', moveDate: '', items: [] };
-
-(function init() {
-  try {
-    const saved = localStorage.getItem('moveplan');
-    if (saved) {
-      state = { ...state, ...JSON.parse(saved) };
-      if (state.fromAddress || state.toAddress || state.items.length) {
-        showScreen('screen-inventory');
-        renderAddresses();
-        renderItems();
+/* ═══════════════════════════════════════════════════════════════
+   THEORY DATABASE
+   Source: korkortonline.se/en/theory/ (studied and compiled)
+═══════════════════════════════════════════════════════════════ */
+const THEORY = {
+  parking: {
+    title: "Parking & Stopping",
+    icon: "P",
+    color: "#0066FF",
+    sections: [
+      {
+        title: "Where you MUST NOT park",
+        rules: [
+          "Within 10 metres before a pedestrian or cycle crossing",
+          "Within 10 metres of an intersection (junction)",
+          "On a priority road (main road) outside built-up areas",
+          "Within 20 metres of a bus stop, tram stop or taxi stand",
+          "On or across a pedestrian or cycle path",
+          "In front of a driveway or blocking access to property",
+          "On a hill or bend where visibility is poor",
+          "On a railway level crossing or tram tracks",
+          "Where a 'No Parking' (P with red diagonal) sign is posted",
+          "On a pavement/sidewalk unless a sign permits it"
+        ]
+      },
+      {
+        title: "Where you MUST NOT stop",
+        rules: [
+          "On a pedestrian or cycle crossing",
+          "On a railway or tram level crossing",
+          "On a tram or bus lane",
+          "In a tunnel or on a bridge (where stopping is prohibited)",
+          "On a motorway (except in a genuine emergency)",
+          "Where a 'No Stopping' sign is posted (circle with red cross)"
+        ]
+      },
+      {
+        title: "Parking on slopes",
+        rules: [
+          "Always apply the handbrake fully before leaving the car",
+          "Facing downhill: turn the front wheels toward the kerb (right)",
+          "Facing uphill: turn the front wheels away from the kerb (left)",
+          "Leave the car in 1st gear (uphill) or reverse gear (downhill)",
+          "Use a wheel chock if the slope is steep and parking for long"
+        ]
+      },
+      {
+        title: "Parking lights",
+        rules: [
+          "Required when stopping in darkness outside lit streets or where there is reduced visibility",
+          "Sidelights (parking lights) — NOT main headlights or hazard lights",
+          "Both sides must be visible to approaching traffic"
+        ]
+      },
+      {
+        title: "Parking time & zones",
+        rules: [
+          "Maximum 24 hours in the same spot in most urban areas (unless signs say otherwise)",
+          "Blue 'P' zone signs show time limits and hours of operation",
+          "A parking disc may be required to mark your arrival time",
+          "Paid parking: pay-and-display or parking apps (e.g. EasyPark)",
+          "Disabled badge holders may have extended rights — always check signs"
+        ]
+      },
+      {
+        title: "Leaving a parked position",
+        rules: [
+          "Check mirrors and blind spots before moving off",
+          "Signal your intention to move out into traffic",
+          "Give way to passing traffic — they have priority",
+          "Check for cyclists in the door zone before opening doors"
+        ]
       }
+    ]
+  },
+
+  speed: {
+    title: "Speed Limits",
+    icon: "V",
+    color: "#FF3B30",
+    sections: [
+      {
+        title: "Default speed limits in Sweden",
+        rules: [
+          "30 km/h — residential zones (30-zones), school areas, narrow streets",
+          "40 km/h — some urban areas where signed",
+          "50 km/h — built-up areas (default if no other sign is posted)",
+          "60 km/h — some arterial roads in cities",
+          "70 km/h — outside built-up areas on smaller roads (default)",
+          "80 km/h — rural roads (where posted)",
+          "90 km/h — larger rural roads and older motorway stretches",
+          "100 km/h — motorway (where posted)",
+          "110 km/h — motorway (where posted)",
+          "120 km/h — motorway (maximum permitted in Sweden)"
+        ]
+      },
+      {
+        title: "Adapting your speed",
+        rules: [
+          "Always drive at a speed safe for current conditions, even below the posted limit",
+          "Reduce speed in rain, snow, ice, fog or poor visibility",
+          "Reduce speed near schools, playgrounds and pedestrians",
+          "Reduce speed when towing a trailer (max 80 km/h unless signed otherwise)",
+          "The posted limit is a maximum, not a target — conditions may demand less"
+        ]
+      },
+      {
+        title: "Stopping distances (dry road)",
+        rules: [
+          "30 km/h: thinking ~9 m + braking ~8 m = ~17 m total",
+          "50 km/h: thinking ~15 m + braking ~21 m = ~36 m total",
+          "70 km/h: thinking ~21 m + braking ~42 m = ~63 m total",
+          "90 km/h: thinking ~27 m + braking ~68 m = ~95 m total",
+          "110 km/h: thinking ~33 m + braking ~101 m = ~134 m total",
+          "Wet roads approximately double the braking distance",
+          "Snow/ice can increase braking distance 5–10 times"
+        ]
+      },
+      {
+        title: "Speed and risk",
+        rules: [
+          "Speed is the single biggest factor in accident severity",
+          "Doubling speed increases kinetic energy four times",
+          "A pedestrian hit at 30 km/h has ~90% survival chance; at 50 km/h it drops to ~50%",
+          "Even 5–10 km/h above the limit significantly increases risk"
+        ]
+      }
+    ]
+  },
+
+  intersections: {
+    title: "Intersections & Priority",
+    icon: "+",
+    color: "#FF9500",
+    sections: [
+      {
+        title: "The right-hand rule",
+        rules: [
+          "At unmarked intersections with no signs, give way to vehicles coming from the RIGHT",
+          "Applies between roads of equal status — neither has official priority",
+          "The right-hand rule does NOT apply on roundabouts (give way to traffic inside)",
+          "Always check right, left, then right again before entering an unmarked junction"
+        ]
+      },
+      {
+        title: "Priority road (yellow diamond sign)",
+        rules: [
+          "A yellow diamond sign means YOU are on a priority road — you have right of way",
+          "Traffic joining from side roads MUST give way to you",
+          "A crossed yellow diamond (with diagonal bar) means the priority road ends ahead",
+          "Priority roads are usually marked at each intersection on them"
+        ]
+      },
+      {
+        title: "Give way (yield) sign — inverted triangle",
+        rules: [
+          "An inverted red-bordered triangle means you MUST give way to all crossing traffic",
+          "Slow down and be prepared to stop",
+          "A white inverted triangle painted on the road means the same thing",
+          "You must give way even if you can see the road is clear from a distance"
+        ]
+      },
+      {
+        title: "STOP sign",
+        rules: [
+          "Red octagonal 'STOP' sign — you MUST come to a complete halt",
+          "Stop at or before the stop line on the road",
+          "If no line is visible, stop at the edge of the intersection",
+          "After stopping, give way to all crossing traffic before proceeding"
+        ]
+      },
+      {
+        title: "Signalling at intersections",
+        rules: [
+          "Signal your intended direction (left/right) in good time before the junction",
+          "Cancel the signal after turning",
+          "Do not signal until you are sure which way you will go",
+          "Make eye contact with other road users to confirm intentions"
+        ]
+      },
+      {
+        title: "Box junctions and blocking",
+        rules: [
+          "Never enter an intersection if you cannot clear it — you may block cross-traffic",
+          "Wait behind the stop/give-way line until there is a clear path through",
+          "Blocking an intersection is illegal and dangerous"
+        ]
+      }
+    ]
+  },
+
+  roundabout: {
+    title: "Roundabouts",
+    icon: "↺",
+    color: "#34C759",
+    sections: [
+      {
+        title: "Priority in Swedish roundabouts",
+        rules: [
+          "Traffic INSIDE the roundabout has priority — you must give way when entering",
+          "This rule was updated in Sweden in 2010 (previously the opposite)",
+          "Look left for traffic already circulating before you enter",
+          "A give-way sign or line at the entry confirms you must yield"
+        ]
+      },
+      {
+        title: "Signalling in a roundabout",
+        rules: [
+          "Entering: no indicator required (or indicate left if you plan to continue around)",
+          "Exiting: indicate RIGHT before your exit to warn others you are leaving",
+          "Signal early — at least at the exit BEFORE your intended exit",
+          "Cancel the signal promptly after you have left the roundabout"
+        ]
+      },
+      {
+        title: "Lane choice",
+        rules: [
+          "Right lane: for turning right or going straight (first exit or second)",
+          "Left lane: for straight on or left (second exit or beyond) — follow road markings",
+          "In a multi-lane roundabout, do not change lanes inside the circle",
+          "Stay in your lane and exit from the lane you entered in"
+        ]
+      },
+      {
+        title: "Driving behaviour",
+        rules: [
+          "Reduce speed before entering — roundabouts are typically 30 km/h",
+          "Drive anti-clockwise (like all Swedish traffic: keep right, flow goes left)",
+          "Keep a safe following distance from the car ahead",
+          "Watch for cyclists and pedestrians at roundabout entries and exits",
+          "Trucks and buses may need extra space — give way"
+        ]
+      }
+    ]
+  },
+
+  motorway: {
+    title: "Motorway Rules (Motorväg)",
+    icon: "M",
+    color: "#5856D6",
+    sections: [
+      {
+        title: "What defines a motorway?",
+        rules: [
+          "Blue rectangular sign with white road and car symbol marks the start",
+          "At least two lanes in each direction, separated by a central reservation",
+          "No at-grade intersections — all entries and exits are via ramps",
+          "A crossed version of the sign marks the end of the motorway"
+        ]
+      },
+      {
+        title: "Speed on the motorway",
+        rules: [
+          "Maximum speed: 110–120 km/h (check posted signs — it varies by section)",
+          "No minimum speed is posted, but you must not drive so slowly as to impede traffic",
+          "Adapt speed to traffic, weather and visibility conditions",
+          "Variable speed limit signs (electronic) must be obeyed"
+        ]
+      },
+      {
+        title: "Lane discipline",
+        rules: [
+          "Always keep to the RIGHT lane unless overtaking",
+          "Overtake on the LEFT only — overtaking on the right is prohibited",
+          "Return to the right lane promptly after overtaking",
+          "The emergency (hard shoulder) lane is ONLY for breakdowns and emergencies"
+        ]
+      },
+      {
+        title: "Stopping and parking",
+        rules: [
+          "Stopping on a motorway is PROHIBITED except in a genuine emergency",
+          "In an emergency: move to the hard shoulder (emergency lane) immediately",
+          "Switch on hazard lights as soon as you stop",
+          "If safe, place a warning triangle at least 100 m behind the vehicle",
+          "Move behind the crash barrier — never stand between the car and traffic",
+          "Call roadside assistance from a safe location"
+        ]
+      },
+      {
+        title: "What is prohibited on a motorway",
+        rules: [
+          "U-turns — absolutely forbidden",
+          "Reversing on the carriageway or hard shoulder",
+          "Pedestrians, cyclists, mopeds (class A) and vehicles unable to reach 40 km/h",
+          "Stopping or parking except in designated lay-bys or emergencies",
+          "Crossing the central reservation"
+        ]
+      },
+      {
+        title: "Safe following distance",
+        rules: [
+          "Minimum 3-second gap recommended (more in wet/slippery conditions)",
+          "Use a fixed landmark: count 3 seconds after the car ahead passes it",
+          "In rain or fog increase to 4–6 seconds",
+          "Large vehicles need extra stopping distance — leave more room behind trucks"
+        ]
+      }
+    ]
+  },
+
+  merging: {
+    title: "Joining the Motorway",
+    icon: "→",
+    color: "#FF6B35",
+    sections: [
+      {
+        title: "How to merge correctly",
+        rules: [
+          "Use the acceleration lane to build up speed to match motorway traffic",
+          "Signal with the LEFT indicator to show your intention to merge",
+          "Check mirrors and your left blind spot before moving into the main lane",
+          "Merge smoothly into a gap — traffic on the motorway has right of way",
+          "Never stop at the end of the acceleration lane unless absolutely necessary"
+        ]
+      },
+      {
+        title: "Motorway traffic's duty",
+        rules: [
+          "Vehicles already on the motorway do NOT have to move over, but it is courteous to do so if safe",
+          "Avoid sudden braking when traffic is merging next to you",
+          "Maintain predictable speed to help merging vehicles judge gaps"
+        ]
+      },
+      {
+        title: "Zipper (Dragkedja) merging",
+        rules: [
+          "When two lanes must merge into one, use the 'zipper' method",
+          "Both lanes drive all the way to the merge point",
+          "Then vehicles alternate one by one — like teeth of a zip",
+          "This is the most efficient and safest merging method"
+        ]
+      },
+      {
+        title: "Common mistakes",
+        rules: [
+          "Stopping at the end of the ramp — very dangerous, you have nowhere to go",
+          "Merging too early — cutting off acceleration lane space",
+          "Merging too slowly — being slower than traffic creates risk",
+          "Forgetting to cancel the indicator after merging"
+        ]
+      }
+    ]
+  },
+
+  exiting: {
+    title: "Exiting the Motorway",
+    icon: "↗",
+    color: "#AF52DE",
+    sections: [
+      {
+        title: "How to exit correctly",
+        rules: [
+          "Move to the RIGHT lane well in advance of your exit",
+          "Signal right early — when you see the exit sign (typically 500 m before)",
+          "Enter the deceleration (exit) lane and THEN begin braking",
+          "Do not brake on the main carriageway before entering the exit lane",
+          "Follow the curve of the exit ramp at an appropriate speed"
+        ]
+      },
+      {
+        title: "Speedometer awareness",
+        rules: [
+          "After long motorway driving, your sense of speed is distorted — 60 km/h will feel like 30 km/h",
+          "Actively check your speedometer when leaving the motorway",
+          "Note the new speed limit signs immediately after the exit",
+          "\"Motorway hypnosis\" is real — consciously recalibrate your speed"
+        ]
+      },
+      {
+        title: "If you miss your exit",
+        rules: [
+          "NEVER reverse on a motorway under any circumstances",
+          "Continue to the next exit and return via other roads",
+          "Plan your route in advance to avoid last-minute lane changes",
+          "Use navigation guidance to avoid confusion"
+        ]
+      }
+    ]
+  },
+
+  pedestrian: {
+    title: "Pedestrian Crossings",
+    icon: "🚶",
+    color: "#FF9500",
+    sections: [
+      {
+        title: "Your duty at zebra crossings",
+        rules: [
+          "You MUST give way to any pedestrian who is on or about to step onto the crossing",
+          "A pedestrian waiting at the kerb edge is about to step on — you must stop",
+          "Reduce speed well in advance and be prepared to stop completely",
+          "Do not wave or beckon pedestrians — let them decide when to cross safely"
+        ]
+      },
+      {
+        title: "Rules near crossings",
+        rules: [
+          "No overtaking within 10 m before an unmarked pedestrian crossing",
+          "No parking within 10 m before a crossing (from either direction)",
+          "Do not stop your vehicle ON the crossing when stationary in traffic",
+          "Give cyclists the same priority as pedestrians at combined crossings"
+        ]
+      },
+      {
+        title: "Signalled crossings",
+        rules: [
+          "A green pedestrian light means pedestrians may cross — you must wait",
+          "Even on a green vehicle light, check for pedestrians finishing their crossing",
+          "Flashing red pedestrian light means pedestrians should not start crossing, but those already crossing have right of way",
+          "Never pass a red light — even if the crossing looks empty"
+        ]
+      },
+      {
+        title: "Cyclists at crossings",
+        rules: [
+          "At a marked cycle crossing, cyclists in the cycle lane have priority",
+          "At a combined pedestrian/cycle crossing, give way to both walkers and cyclists",
+          "Cyclists using a zebra crossing as pedestrians (walking bikes) have pedestrian priority"
+        ]
+      },
+      {
+        title: "Extra care situations",
+        rules: [
+          "Children, elderly and disabled people may need more time — be patient",
+          "Poor visibility (night, rain, bright sun) requires extra caution",
+          "Parked vehicles may hide approaching pedestrians — slow right down",
+          "School zones: extra vigilance, children may run out unpredictably"
+        ]
+      }
+    ]
+  },
+
+  traffic_lights: {
+    title: "Traffic Lights",
+    icon: "🚦",
+    color: "#FF3B30",
+    sections: [
+      {
+        title: "What each light means",
+        rules: [
+          "RED: Stop before the stop line. Wait.",
+          "RED + YELLOW together: Prepare to go — the green is about to appear",
+          "GREEN: You may proceed when the way is clear",
+          "YELLOW (amber) alone: Stop if you can safely do so — the light is about to turn red",
+          "GREEN ARROW: You may proceed in the direction of the arrow only",
+          "FLASHING YELLOW: Treat like an uncontrolled junction — proceed with caution"
+        ]
+      },
+      {
+        title: "Common rules at traffic lights",
+        rules: [
+          "Stop at or before the stop line — not beyond it",
+          "Do not enter an intersection on green if you cannot clear it",
+          "Even on green: check for red-light runners and pedestrians before proceeding",
+          "If a signal is not working: treat it as a give-way/unmarked junction",
+          "Right turn on red is NOT permitted in Sweden (unless a specific arrow sign allows it)"
+        ]
+      },
+      {
+        title: "Yellow light — the hardest decision",
+        rules: [
+          "If you can stop safely before the line, you MUST stop",
+          "Only continue through yellow if stopping would cause an accident (you are too close)",
+          "Never accelerate to 'beat' the yellow light",
+          "The yellow phase is typically 3–5 seconds in Sweden"
+        ]
+      },
+      {
+        title: "Tram and bus signals",
+        rules: [
+          "Trams have their own special signal lights (white/black bar symbols)",
+          "Do not confuse vehicle signals with tram signals",
+          "Trams and buses may have priority signals that turn green for them first"
+        ]
+      }
+    ]
+  },
+
+  overtaking: {
+    title: "Overtaking",
+    icon: "⇉",
+    color: "#007AFF",
+    sections: [
+      {
+        title: "How to overtake safely",
+        rules: [
+          "Overtake on the LEFT side in Sweden",
+          "Signal LEFT before moving out to overtake",
+          "Check mirrors and left blind spot before pulling out",
+          "Ensure you have sufficient visibility and a clear gap ahead",
+          "Pass the vehicle with a safe lateral margin",
+          "Signal RIGHT and return to the right lane when safely past",
+          "Do not cut back in too sharply — the overtaken vehicle should still be visible in your mirror"
+        ]
+      },
+      {
+        title: "When you MUST NOT overtake",
+        rules: [
+          "When there is a solid white centre line on YOUR side of the road",
+          "At or near an intersection or junction",
+          "On a hilltop or bend where your visibility ahead is limited",
+          "At a railway level crossing",
+          "Within 10 m before an unmarked pedestrian crossing",
+          "When the vehicle ahead is overtaking someone else",
+          "When oncoming traffic would be endangered or forced to swerve",
+          "When the vehicle ahead is signalling to turn right"
+        ]
+      },
+      {
+        title: "Being overtaken",
+        rules: [
+          "Do NOT increase your speed while being overtaken",
+          "Keep to the right to give the overtaking driver maximum space",
+          "If necessary, slow slightly to help them complete the manoeuvre safely"
+        ]
+      },
+      {
+        title: "Overtaking cyclists and horses",
+        rules: [
+          "Allow at least 1.5 m lateral space when passing a cyclist",
+          "Reduce speed — cyclists can swerve suddenly to avoid potholes",
+          "When passing horses: slow right down, avoid loud engine revving, give wide berth"
+        ]
+      }
+    ]
+  },
+
+  road_signs: {
+    title: "Traffic Signs",
+    icon: "⚠",
+    color: "#FF9500",
+    sections: [
+      {
+        title: "Warning signs",
+        rules: [
+          "Shape: Upright triangle with red border on white/yellow background",
+          "Meaning: Danger ahead — slow down and pay extra attention",
+          "Common examples: slippery road (skidding car), roadworks, deer crossing, sharp bend",
+          "Always preceded by distance information if needed (e.g. 200 m plate below)"
+        ]
+      },
+      {
+        title: "Prohibitory/Restriction signs",
+        rules: [
+          "Shape: Circle with red border",
+          "Meaning: Something you must NOT do — a prohibition",
+          "Speed limit: red-bordered circle with number (e.g. '50')",
+          "No entry: red circle with white horizontal bar",
+          "No overtaking: red circle with two cars side by side",
+          "End of restriction: diagonal bar through the sign or grey version"
+        ]
+      },
+      {
+        title: "Mandatory signs",
+        rules: [
+          "Shape: Blue circle",
+          "Meaning: You MUST follow this instruction",
+          "Examples: Turn right ahead (blue circle with right arrow), straight only, roundabout",
+          "Mandatory minimum speed: blue circle with number"
+        ]
+      },
+      {
+        title: "Information & Direction signs",
+        rules: [
+          "Shape: Blue rectangle or square",
+          "Meaning: Useful guidance — not a prohibition or obligation",
+          "Examples: Motorway begin/end, parking zone, hospital, recommended speed",
+          "Green rectangular signs: national roads and motorway directions",
+          "Blue rectangular: EU motorways and main roads"
+        ]
+      },
+      {
+        title: "Priority signs",
+        rules: [
+          "Yellow diamond: You are on a priority road — enjoy right of way",
+          "Yellow diamond with cross: Priority road ahead ends",
+          "Inverted triangle (red border): Give way — yield to all crossing traffic",
+          "Red octagon STOP: Full stop required before proceeding"
+        ]
+      }
+    ]
+  },
+
+  alcohol: {
+    title: "Alcohol & Substances",
+    icon: "⚠",
+    color: "#FF3B30",
+    sections: [
+      {
+        title: "Blood alcohol limits in Sweden",
+        rules: [
+          "Legal limit: under 0.2 per mille (‰) blood alcohol concentration (BAC)",
+          "Sweden has one of the strictest limits in Europe",
+          "0.2–1.0 ‰: Drink-driving offence (rattfylleri) — fines and licence suspension",
+          "Above 1.0 ‰: Aggravated drink-driving (grovt rattfylleri) — imprisonment",
+          "Zero tolerance is the only safe approach — one drink can put you over 0.2 ‰"
+        ]
+      },
+      {
+        title: "Consequences of drink-driving",
+        rules: [
+          "Criminal record",
+          "Large fine (based on income — day-fines)",
+          "Loss of driving licence (suspension or revocation)",
+          "Prison sentence for aggravated cases",
+          "Compulsory alcohol interlock installation in some cases",
+          "Higher car insurance premiums"
+        ]
+      },
+      {
+        title: "Drugs and medications",
+        rules: [
+          "Zero tolerance for illegal drugs (narcotics) — any trace is an offence",
+          "Prescription medications can also impair driving — check with your doctor",
+          "Read medication labels for warnings about driving",
+          "Combining alcohol with medication multiplies impairment",
+          "Fatigue has very similar effects to alcohol — get adequate sleep before driving"
+        ]
+      }
+    ]
+  },
+
+  lights: {
+    title: "Vehicle Lights",
+    icon: "💡",
+    color: "#FFCC00",
+    sections: [
+      {
+        title: "When lights are required",
+        rules: [
+          "Dipped headlights (low beam) are MANDATORY at all times in Sweden — day and night",
+          "This is a legal requirement even on bright sunny days",
+          "Daytime running lights (DRL) alone do NOT satisfy the requirement — use headlights"
+        ]
+      },
+      {
+        title: "Full beam (high beam)",
+        rules: [
+          "Use in darkness when no oncoming or preceding traffic is nearby",
+          "Dip to low beam at least 150–200 m before meeting oncoming traffic",
+          "Dip when following a vehicle (to avoid dazzling the driver via mirrors)",
+          "Do not use full beam in fog — it reflects back and reduces visibility"
+        ]
+      },
+      {
+        title: "Fog lights",
+        rules: [
+          "Front fog lights: Can be used in fog, heavy snow, rain or sandstorm",
+          "Rear fog light: MUST be used when visibility drops below approximately 50 m",
+          "Switch off fog lights when conditions improve — they dazzle other drivers",
+          "Using rear fog lights without reason is prohibited"
+        ]
+      },
+      {
+        title: "Hazard lights",
+        rules: [
+          "All four indicators flashing simultaneously",
+          "Use when: broken down, stopped in an emergency, warning others of sudden danger",
+          "Can be used briefly when decelerating sharply on a motorway to warn following traffic",
+          "Do NOT use as an excuse to park illegally"
+        ]
+      }
+    ]
+  }
+};
+
+/* ═══════════════════════════════════════════════════════════════
+   ROUTE DATA
+   Update ROUTE_WAYPOINTS and ROUTE_POINTS to change the route.
+   All coordinates are [latitude, longitude].
+═══════════════════════════════════════════════════════════════ */
+
+// Polyline waypoints — the path drawn on the map
+const ROUTE_WAYPOINTS = [
+  [56.6434, 12.8551], // 1. Trafikverket start
+  [56.6448, 12.8558],
+  [56.6466, 12.8565],
+  [56.6490, 12.8572], // 2. Residential zone
+  [56.6520, 12.8558],
+  [56.6545, 12.8532],
+  [56.6565, 12.8510], // 3. Roundabout
+  [56.6585, 12.8475],
+  [56.6605, 12.8440],
+  [56.6618, 12.8420], // 4. Intersection
+  [56.6628, 12.8385],
+  [56.6636, 12.8348],
+  [56.6641, 12.8318], // 5. E6 on-ramp
+  [56.6658, 12.8280],
+  [56.6688, 12.8252],
+  [56.6725, 12.8242],
+  [56.6760, 12.8248], // 6. E6 highway midpoint
+  [56.6800, 12.8265],
+  [56.6836, 12.8300],
+  [56.6855, 12.8368], // 7. E6 exit
+  [56.6848, 12.8430],
+  [56.6828, 12.8490],
+  [56.6800, 12.8530],
+  [56.6772, 12.8555], // 8. Pedestrian crossing
+  [56.6740, 12.8570],
+  [56.6710, 12.8576],
+  [56.6678, 12.8575],
+  [56.6648, 12.8573],
+  [56.6618, 12.8570],
+  [56.6588, 12.8568],
+  [56.6558, 12.8563], // 9. Traffic lights
+  [56.6528, 12.8558],
+  [56.6498, 12.8556],
+  [56.6466, 12.8552],
+  [56.6448, 12.8551],
+  [56.6434, 12.8551]  // 10. Back to Trafikverket
+];
+
+// Points of interest with associated theory categories
+const ROUTE_POINTS = [
+  {
+    id: 1,
+    position: [56.6434, 12.8551],
+    label: "Trafikverket Halmstad",
+    description: "Start — Parking area, Laholmsvägen",
+    icon: "P",
+    theories: ["parking"],
+    studied: false
+  },
+  {
+    id: 2,
+    position: [56.6490, 12.8572],
+    label: "Residential Zone",
+    description: "30–50 km/h built-up area",
+    icon: "V",
+    theories: ["speed", "lights"],
+    studied: false
+  },
+  {
+    id: 3,
+    position: [56.6565, 12.8510],
+    label: "Roundabout",
+    description: "Give way to traffic already in the circle",
+    icon: "↺",
+    theories: ["roundabout", "road_signs"],
+    studied: false
+  },
+  {
+    id: 4,
+    position: [56.6618, 12.8420],
+    label: "Intersection",
+    description: "Right-of-way rules — right-hand rule",
+    icon: "+",
+    theories: ["intersections", "road_signs"],
+    studied: false
+  },
+  {
+    id: 5,
+    position: [56.6641, 12.8318],
+    label: "E6 On-ramp",
+    description: "Merge onto the motorway",
+    icon: "→",
+    theories: ["merging", "motorway"],
+    studied: false
+  },
+  {
+    id: 6,
+    position: [56.6760, 12.8248],
+    label: "E6 Motorway",
+    description: "High-speed section — 110 km/h",
+    icon: "M",
+    theories: ["motorway", "overtaking", "speed"],
+    studied: false
+  },
+  {
+    id: 7,
+    position: [56.6855, 12.8368],
+    label: "E6 Exit",
+    description: "Leave the motorway safely",
+    icon: "↗",
+    theories: ["exiting", "speed"],
+    studied: false
+  },
+  {
+    id: 8,
+    position: [56.6772, 12.8555],
+    label: "Pedestrian Crossing",
+    description: "Zebra crossing — give way to pedestrians",
+    icon: "🚶",
+    theories: ["pedestrian"],
+    studied: false
+  },
+  {
+    id: 9,
+    position: [56.6558, 12.8563],
+    label: "Traffic Light Junction",
+    description: "Signalled intersection",
+    icon: "🚦",
+    theories: ["traffic_lights", "intersections"],
+    studied: false
+  },
+  {
+    id: 10,
+    position: [56.6434, 12.8551],
+    label: "Back to Trafikverket",
+    description: "End of route — park safely",
+    icon: "🏁",
+    theories: ["parking"],
+    studied: false
+  }
+];
+
+/* ═══════════════════════════════════════════════════════════════
+   STATE
+═══════════════════════════════════════════════════════════════ */
+let points = JSON.parse(JSON.stringify(ROUTE_POINTS)); // deep clone
+let activeTheoryPointId = null;
+let activeTheoryCatKey = null;
+let markers = {};
+let sheetOpen = false;
+
+/* ═══════════════════════════════════════════════════════════════
+   MAP SETUP
+═══════════════════════════════════════════════════════════════ */
+const map = L.map('map', {
+  center: [56.665, 12.845],
+  zoom: 13,
+  zoomControl: true
+});
+
+// Clean minimal tile layer
+L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+  attribution: '© OpenStreetMap contributors © CartoDB',
+  subdomains: 'abcd',
+  maxZoom: 19
+}).addTo(map);
+
+// Route polyline
+L.polyline(ROUTE_WAYPOINTS, {
+  color: '#E61E4D',
+  weight: 4,
+  opacity: 0.82,
+  lineJoin: 'round',
+  lineCap: 'round'
+}).addTo(map);
+
+// Arrowhead direction indicators (decorative dashes)
+L.polyline(ROUTE_WAYPOINTS, {
+  color: '#fff',
+  weight: 1.5,
+  opacity: 0.4,
+  dashArray: '1 18',
+  lineJoin: 'round'
+}).addTo(map);
+
+/* ═══════════════════════════════════════════════════════════════
+   MARKERS
+═══════════════════════════════════════════════════════════════ */
+function makeIcon(point, active) {
+  const cat = THEORY[point.theories[0]];
+  const color = cat ? cat.color : '#888';
+  const cls = ['map-pin', active ? 'active' : '', point.studied ? 'studied' : ''].filter(Boolean).join(' ');
+  return L.divIcon({
+    className: '',
+    html: `<div class="${cls}" style="background:${color}; position:relative;">${point.icon}</div>`,
+    iconSize: [34, 34],
+    iconAnchor: [17, 17],
+    popupAnchor: [0, -22]
+  });
+}
+
+function renderMarkers() {
+  points.forEach(point => {
+    if (markers[point.id]) {
+      markers[point.id].remove();
     }
-  } catch(_) {}
-})();
-
-function persist() { localStorage.setItem('moveplan', JSON.stringify(state)); }
-
-// ── Screens ──────────────────────────────────────────────────
-function showScreen(id) {
-  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-  document.getElementById(id).classList.add('active');
+    const marker = L.marker(point.position, { icon: makeIcon(point, false) });
+    marker.on('click', () => openTheory(point.id));
+    marker.addTo(map);
+    markers[point.id] = marker;
+  });
 }
 
-function startInventory() {
-  state.fromAddress = document.getElementById('from-address').value.trim();
-  state.toAddress   = document.getElementById('to-address').value.trim();
-  state.moveDate    = document.getElementById('move-date').value;
-  persist();
-  showScreen('screen-inventory');
-  renderAddresses();
-  renderItems();
+function refreshMarker(pointId) {
+  const point = points.find(p => p.id === pointId);
+  if (!point || !markers[pointId]) return;
+  const isActive = activeTheoryPointId === pointId;
+  markers[pointId].setIcon(makeIcon(point, isActive));
 }
 
-function editAddresses() {
-  document.getElementById('from-address').value = state.fromAddress;
-  document.getElementById('to-address').value   = state.toAddress;
-  document.getElementById('move-date').value     = state.moveDate;
-  showScreen('screen-setup');
+/* ═══════════════════════════════════════════════════════════════
+   ROUTE STOP LIST
+═══════════════════════════════════════════════════════════════ */
+function renderStopList() {
+  const body = document.getElementById('sheet-body');
+  body.innerHTML = points.map(p => {
+    const cat = THEORY[p.theories[0]];
+    const color = cat ? cat.color : '#888';
+    const tags = p.theories.map(k => THEORY[k] ? `<span class="stop-tag" style="background:${THEORY[k].color}">${THEORY[k].title}</span>` : '').join('');
+    return `
+      <div class="stop-item" onclick="openTheory(${p.id})">
+        <div class="stop-num-circle" style="background:${color}">${p.id}</div>
+        <div class="stop-info">
+          <div class="stop-name">${p.label}</div>
+          <div class="stop-desc">${p.description}</div>
+          <div class="stop-tags">${tags}</div>
+        </div>
+        <div class="stop-check ${p.studied ? 'done' : ''}">✓</div>
+      </div>`;
+  }).join('');
 }
 
-// ── Render ───────────────────────────────────────────────────
-function renderAddresses() {
-  document.getElementById('disp-from').textContent = state.fromAddress || '[Address not set]';
-  document.getElementById('disp-to').textContent   = state.toAddress   || '[Address not set]';
+/* ═══════════════════════════════════════════════════════════════
+   THEORY DRAWER
+═══════════════════════════════════════════════════════════════ */
+function openTheory(pointId) {
+  const point = points.find(p => p.id === pointId);
+  if (!point) return;
+
+  activeTheoryPointId = pointId;
+
+  // Update header
+  const cat0 = THEORY[point.theories[0]];
+  const badge = document.getElementById('t-badge');
+  badge.textContent = point.icon;
+  badge.style.background = cat0 ? cat0.color : '#888';
+  document.getElementById('t-name').textContent = point.label;
+  document.getElementById('t-desc').textContent = point.description;
+
+  // Build tabs
+  const tabsEl = document.getElementById('theory-tabs');
+  tabsEl.innerHTML = point.theories.map((k, i) => {
+    const cat = THEORY[k];
+    if (!cat) return '';
+    return `<button class="theory-tab ${i === 0 ? 'active' : ''}" onclick="switchTab('${k}', this)" style="${i === 0 ? `background:${cat.color};border-color:${cat.color};` : ''}">${cat.title}</button>`;
+  }).join('');
+
+  // Build theory content
+  const bodyEl = document.getElementById('theory-body');
+  bodyEl.innerHTML = point.theories.map((k, i) => {
+    const cat = THEORY[k];
+    if (!cat) return '';
+    const accordionItems = cat.sections.map((s, si) => `
+      <div class="acc-section ${si === 0 ? 'open' : ''}">
+        <div class="acc-header" onclick="toggleAcc(this)">
+          <span class="acc-title">${s.title}</span>
+          <span class="acc-chevron">▼</span>
+        </div>
+        <div class="acc-body">
+          <ul class="rule-list">
+            ${s.rules.map(r => `<li class="rule-item"><div class="rule-dot"></div><span>${r}</span></li>`).join('')}
+          </ul>
+        </div>
+      </div>`).join('');
+
+    return `
+      <div class="theory-cat ${i === 0 ? 'active' : ''}" data-key="${k}">
+        <div class="theory-cat-title-row">
+          <div class="theory-cat-icon" style="background:${cat.color}">${cat.icon}</div>
+          <div class="theory-cat-title">${cat.title}</div>
+        </div>
+        <div class="accordion">${accordionItems}</div>
+        <button class="study-btn ${point.studied ? 'done' : ''}" onclick="markStudied(${point.id}, this)">
+          ${point.studied ? '✓ Marked as studied' : 'Mark as studied'}
+        </button>
+      </div>`;
+  }).join('');
+
+  activeTheoryCatKey = point.theories[0];
+
+  // Pan map to point
+  map.panTo(point.position, { animate: true });
+  refreshMarker(pointId);
+
+  // Open drawer
+  document.getElementById('overlay').classList.add('open');
+  document.getElementById('theory-drawer').classList.add('open');
+
+  // Collapse bottom sheet when drawer opens
+  document.getElementById('route-sheet').classList.add('collapsed');
+  sheetOpen = false;
 }
 
-function renderItems() {
-  const list   = document.getElementById('item-list');
-  const empty  = document.getElementById('empty-state');
-  const pdfBtn = document.getElementById('pdf-btn');
-  const hint   = document.getElementById('pdf-hint');
+function closeTheory() {
+  document.getElementById('overlay').classList.remove('open');
+  document.getElementById('theory-drawer').classList.remove('open');
+  if (activeTheoryPointId) {
+    refreshMarker(activeTheoryPointId);
+    activeTheoryPointId = null;
+  }
+}
 
-  const types  = state.items.length;
-  const pieces = state.items.reduce((s, i) => s + (parseInt(i.quantity) || 1), 0);
-  document.getElementById('stat-types').textContent  = `${types} item type${types !== 1 ? 's' : ''}`;
-  document.getElementById('stat-pieces').textContent = `${pieces} piece${pieces !== 1 ? 's' : ''}`;
-
-  if (!types) {
-    empty.style.display = 'flex';
-    list.style.display  = 'none';
-    pdfBtn.disabled     = true;
-    hint.style.display  = 'block';
-    return;
+function switchTab(key, btn) {
+  // Update tab styles
+  const tabs = btn.closest('.theory-tabs').querySelectorAll('.theory-tab');
+  tabs.forEach(t => {
+    t.classList.remove('active');
+    t.style.background = '';
+    t.style.borderColor = '';
+    t.style.color = '';
+  });
+  const cat = THEORY[key];
+  btn.classList.add('active');
+  if (cat) {
+    btn.style.background = cat.color;
+    btn.style.borderColor = cat.color;
+    btn.style.color = '#fff';
   }
 
-  empty.style.display = 'none';
-  list.style.display  = 'flex';
-  pdfBtn.disabled     = false;
-  hint.style.display  = 'none';
+  // Show/hide content
+  document.querySelectorAll('.theory-cat').forEach(el => el.classList.remove('active'));
+  const target = document.querySelector(`.theory-cat[data-key="${key}"]`);
+  if (target) target.classList.add('active');
 
-  list.innerHTML = state.items.map(item => `
-    <div class="item-card">
-      <div class="item-card__head">
-        <span class="item-badge item-badge--${item.type}">${item.type === 'ikea' ? 'IKEA' : 'Custom'}</span>
-        <span class="item-name">${esc(item.name)}</span>
-        <div class="item-acts">
-          <button class="icon-btn icon-btn--edit" onclick="openEditModal('${item.id}')" title="Edit">
-            <svg viewBox="0 0 24 24"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04a1 1 0 0 0 0-1.41l-2.34-2.34a1 1 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>
-          </button>
-          <button class="icon-btn icon-btn--del" onclick="deleteItem('${item.id}')" title="Delete">
-            <svg viewBox="0 0 24 24"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>
-          </button>
-        </div>
-      </div>
-      <div class="item-meta">
-        <div class="meta-item"><span class="meta-lbl">Qty</span><span class="meta-val">${item.quantity}</span></div>
-        ${item.dimensions ? `<div class="meta-item"><span class="meta-lbl">Dimensions</span><span class="meta-val">${esc(item.dimensions)}</span></div>` : ''}
-        ${item.weight     ? `<div class="meta-item"><span class="meta-lbl">Weight</span><span class="meta-val">${esc(item.weight)}</span></div>` : ''}
-      </div>
-      ${item.notes ? `<div class="item-notes">${esc(item.notes)}</div>` : ''}
-    </div>
-  `).join('');
+  activeTheoryCatKey = key;
 }
 
-function esc(str) {
-  return String(str || '')
-    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+function toggleAcc(header) {
+  const section = header.closest('.acc-section');
+  section.classList.toggle('open');
 }
 
-// ── Item CRUD ────────────────────────────────────────────────
-let currentType = 'custom';
-
-function setType(t) {
-  currentType = t;
-  document.getElementById('btn-custom').classList.toggle('active', t === 'custom');
-  document.getElementById('btn-ikea').classList.toggle('active',   t === 'ikea');
-  document.getElementById('ikea-hint').classList.toggle('show',    t === 'ikea');
+function markStudied(pointId, btn) {
+  const point = points.find(p => p.id === pointId);
+  if (!point) return;
+  point.studied = !point.studied;
+  btn.textContent = point.studied ? '✓ Marked as studied' : 'Mark as studied';
+  btn.classList.toggle('done', point.studied);
+  updateProgress();
+  renderStopList();
+  refreshMarker(pointId);
 }
 
-function openAddModal() {
-  document.getElementById('modal-title').textContent = 'Add item';
-  document.getElementById('f-id').value      = '';
-  document.getElementById('f-name').value    = '';
-  document.getElementById('f-qty').value     = '1';
-  document.getElementById('f-weight').value  = '';
-  document.getElementById('f-dim').value     = '';
-  document.getElementById('f-notes').value   = '';
-  setType('custom');
-  openModal();
+function updateProgress() {
+  const done = points.filter(p => p.studied).length;
+  const total = points.length;
+  const pill = document.getElementById('progress-pill');
+  pill.textContent = `${done} / ${total} studied`;
+  pill.classList.toggle('done', done === total);
 }
 
-function openEditModal(id) {
-  const item = state.items.find(i => i.id === id);
-  if (!item) return;
-  document.getElementById('modal-title').textContent = 'Edit item';
-  document.getElementById('f-id').value      = item.id;
-  document.getElementById('f-name').value    = item.name;
-  document.getElementById('f-qty').value     = item.quantity;
-  document.getElementById('f-weight').value  = item.weight  || '';
-  document.getElementById('f-dim').value     = item.dimensions || '';
-  document.getElementById('f-notes').value   = item.notes   || '';
-  setType(item.type);
-  openModal();
-}
+/* ═══════════════════════════════════════════════════════════════
+   SHEET TOGGLE
+═══════════════════════════════════════════════════════════════ */
+document.getElementById('sheet-header').addEventListener('click', () => {
+  sheetOpen = !sheetOpen;
+  document.getElementById('route-sheet').classList.toggle('collapsed', !sheetOpen);
+});
 
-function deleteItem(id) {
-  state.items = state.items.filter(i => i.id !== id);
-  persist();
-  renderItems();
-  toast('Item removed');
-}
+document.getElementById('overlay').addEventListener('click', closeTheory);
+document.getElementById('theory-close').addEventListener('click', closeTheory);
 
-function saveItem() {
-  const name = document.getElementById('f-name').value.trim();
-  if (!name) { document.getElementById('f-name').focus(); return; }
+/* ═══════════════════════════════════════════════════════════════
+   INIT
+═══════════════════════════════════════════════════════════════ */
+renderMarkers();
+renderStopList();
+updateProgress();
 
-  const id = document.getElementById('f-id').value || String(Date.now());
-  const item = {
-    id,
-    name,
-    type:       currentType,
-    quantity:   Math.max(1, parseInt(document.getElementById('f-qty').value) || 1),
-    weight:     document.getElementById('f-weight').value.trim(),
-    dimensions: document.getElementById('f-dim').value.trim(),
-    notes:      document.getElementById('f-notes').value.trim()
-  };
-
-  const idx = state.items.findIndex(i => i.id === id);
-  if (idx >= 0) { state.items[idx] = item; toast('Item updated'); }
-  else          { state.items.push(item);  toast('Item added');   }
-
-  persist();
-  renderItems();
-  closeModal();
-}
-
-// ── Modal ────────────────────────────────────────────────────
-function openModal()  { document.getElementById('overlay').classList.add('open'); }
-function closeModal() { document.getElementById('overlay').classList.remove('open'); }
-function closeOverlay(e) { if (e.target === document.getElementById('overlay')) closeModal(); }
-
-// ── Toast ────────────────────────────────────────────────────
-function toast(msg) {
-  const el = document.getElementById('toast');
-  el.textContent = msg;
-  el.classList.add('show');
-  setTimeout(() => el.classList.remove('show'), 2600);
-}
-
-// ── PDF ──────────────────────────────────────────────────────
-function generatePDF() {
-  if (!state.items.length) return;
-  const { jsPDF } = window.jspdf;
-  const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
-
-  const today = new Date().toLocaleDateString('en-GB', { year:'numeric', month:'long', day:'numeric' });
-  const moveDateStr = state.moveDate
-    ? new Date(state.moveDate + 'T12:00:00').toLocaleDateString('en-GB', { year:'numeric', month:'long', day:'numeric' })
-    : null;
-
-  // Header band
-  doc.setFillColor(0, 50, 210);
-  doc.rect(0, 0, 210, 34, 'F');
-  doc.setTextColor(255,255,255);
-  doc.setFont('helvetica','bold');
-  doc.setFontSize(18);
-  doc.text('Moving Inventory', 14, 13);
-  doc.setFont('helvetica','normal');
-  doc.setFontSize(9);
-  doc.text(`Generated: ${today}`, 14, 20);
-  if (moveDateStr) doc.text(`Move date: ${moveDateStr}`, 14, 26);
-
-  // Address section
-  doc.setTextColor(30,30,30);
-  doc.setFillColor(245,247,255);
-  doc.roundedRect(10, 38, 90, 22, 2, 2, 'F');
-  doc.roundedRect(110, 38, 90, 22, 2, 2, 'F');
-
-  doc.setFont('helvetica','bold'); doc.setFontSize(8);
-  doc.setTextColor(0,50,210);
-  doc.text('FROM', 15, 44);
-  doc.text('TO', 115, 44);
-  doc.setFont('helvetica','normal'); doc.setFontSize(10);
-  doc.setTextColor(30,30,30);
-  doc.text(state.fromAddress || '[Address not provided]', 15, 52, { maxWidth: 82 });
-  doc.text(state.toAddress   || '[Address not provided]', 115, 52, { maxWidth: 82 });
-
-  // Table
-  const totalTypes  = state.items.length;
-  const totalPieces = state.items.reduce((s,i) => s + (parseInt(i.quantity)||1), 0);
-
-  const rows = state.items.map((item, i) => [
-    String(i + 1),
-    item.name + (item.type === 'ikea' ? ' ★' : ''),
-    String(item.quantity),
-    item.dimensions || '—',
-    item.weight     || '—',
-    item.notes      || '—'
-  ]);
-
-  doc.autoTable({
-    startY: 66,
-    head: [['#', 'Item name', 'Qty', 'Dimensions', 'Weight', 'Notes']],
-    body: rows,
-    foot: [[{
-      content: `${totalTypes} item type${totalTypes!==1?'s':''} · ${totalPieces} piece${totalPieces!==1?'s':''}`,
-      colSpan: 6,
-      styles: { fontStyle:'bold', halign:'right', fillColor:[240,243,255], textColor:[0,50,210] }
-    }]],
-    styles: { font:'helvetica', fontSize:9, cellPadding:{ top:4,bottom:4,left:4,right:4 }, overflow:'linebreak' },
-    headStyles: { fillColor:[0,50,210], textColor:[255,255,255], fontStyle:'bold', fontSize:9 },
-    alternateRowStyles: { fillColor:[249,250,255] },
-    columnStyles: {
-      0: { cellWidth:10 },
-      1: { cellWidth:55 },
-      2: { cellWidth:12 },
-      3: { cellWidth:42 },
-      4: { cellWidth:22 },
-      5: { cellWidth:'auto' }
-    },
-    margin: { left:10, right:10 }
-  });
-
-  // Footer
-  const ph = doc.internal.pageSize.height;
-  doc.setFontSize(7.5); doc.setTextColor(150);
-  doc.text('This document was generated for the purpose of obtaining moving quotes.  ★ = IKEA product', 10, ph - 7);
-
-  doc.save(`moving-inventory-${new Date().toISOString().split('T')[0]}.pdf`);
-  toast('PDF downloaded');
-}
+// Fit map to show entire route
+const routeBounds = L.latLngBounds(ROUTE_WAYPOINTS);
+map.fitBounds(routeBounds, { padding: [80, 40] });
 </script>
 </body>
 </html>
