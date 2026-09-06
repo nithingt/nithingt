@@ -1,0 +1,47 @@
+{
+  "production": "NIGHTSHIFT",
+  "page": 5,
+  "style": "rough graphite storyboard sketch, loose gestural linework, minimal cross-hatching, grey marker wash, black and white, no color, unfinished edges, production board not illustration",
+  "negative": "color, painterly rendering, photorealistic, 3d render, clean vector lines, text, watermark, signature, logo, borders, frame",
+  "characters": {
+    "sable": "mechanic, late 20s, short dark hair, heavy canvas work jacket, forearms bare",
+    "roon": "younger, hair tied back, pale collarless shirt, no jacket"
+  },
+  "shots": [
+    {
+      "id": "09",
+      "label": "cont'd",
+      "caption": "...CAMERA now over Sable on Roon... she stops...",
+      "camera": "over-the-shoulder, 40mm, camera at bench height, Sable's head and shoulder a dark out-of-focus mass occupying frame left foreground, Roon standing small in deep background right, framed in a lit doorway, full figure",
+      "action": "Roon has stopped walking. Weight still forward. She has just seen it."
+    },
+    {
+      "id": "10",
+      "label": "SHOT 10",
+      "caption": "CLOSE on Roon: \"What is that... What's going on here?!\"",
+      "camera": "close-up, 85mm, camera slightly below eyeline, head fills frame, subject centered, eyeline just off lens to camera left, shallow background falloff",
+      "action": "Reaction. Mouth parting, brows up and drawn in. Not yet angry — still resolving what she is looking at."
+    },
+    {
+      "id": "11",
+      "label": "SHOT 11",
+      "caption": "SABLE: \"Uhh.. Oh, c'mon...let's face it, you've caught me doing worse things...\"",
+      "camera": "low angle, 24mm wide, camera near floor looking up, verticals converging hard, subject centered, a horizontal gantry rig crossing the top third of frame",
+      "action": "Sable pinned under the rig, both arms up holding it off her chest. Talking her way out of it from flat on her back."
+    },
+    {
+      "id": "12",
+      "label": "SHOT 12",
+      "caption": "WIDE — neither of them moves. Hold on it.",
+      "camera": "wide two-shot, 35mm, camera at standing eye height, both figures full-length and separated across frame, heavy machine bulk frame right, deep floor perspective",
+      "action": "A beat. The distance between them is the shot."
+    },
+    {
+      "id": "13",
+      "label": "SHOT 13",
+      "caption": "INSERT — her hands, still on the coupling. She hasn't let go.",
+      "camera": "insert close-up, 100mm macro, camera looking down at a shallow angle, cylindrical coupling running across frame, two hands gripping it, no faces in frame",
+      "action": "She is still holding the thing she is denying."
+    }
+  ]
+}
